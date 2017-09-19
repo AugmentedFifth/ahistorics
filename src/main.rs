@@ -9,6 +9,7 @@
 //! A 2D action RPG, written in pure Rust
 
 mod camera;
+mod controls;
 mod geometry;
 mod map_data;
 mod matrix;
@@ -88,7 +89,8 @@ fn main() {
     let mut camera = Camera::new(
         hex_scaled_width,
         hex_scaled_height,
-        [8.0, 7.0]
+        150.0,
+        [0.0, 0.0]
     );
 
     let side_len = 24;

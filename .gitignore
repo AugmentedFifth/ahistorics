@@ -6,3 +6,5 @@ Cargo.lock
 ## IDE stuff ##
 .vscode/
 tokamak.toml
+*.iml
+.idea/

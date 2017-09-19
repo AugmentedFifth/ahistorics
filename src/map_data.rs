@@ -17,8 +17,8 @@ pub struct MapData {
 impl MapData {
     pub fn new(row_size: usize, data: Vec<Hex>) -> Self {
         MapData {
-            row_size: row_size,
-            data:     data,
+            row_size,
+            data,
         }
     }
 
@@ -67,6 +67,6 @@ pub fn simulated_map_data(side_len: usize) -> MapData {
 
     MapData {
         row_size: side_len,
-        data:     data,
+        data,
     }
 }

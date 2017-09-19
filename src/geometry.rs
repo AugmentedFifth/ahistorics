@@ -39,3 +39,17 @@ pub fn real_pos_to_grid(real_pos: &Vec2d, round_dir: i8) -> Vec2d {
         [real_x.floor(), real_y.floor()]
     }
 }
+
+/// Calculates one point in a one-dimensional quadratic Bezier curve.
+///
+/// # Arguments
+///
+/// * `p0` - First control point (start point).
+/// * `p1` - Second control point (determines curvature).
+/// * `p2` - Third control point (end point).
+/// * `t`  - Time, where `0 <= t <= 1`.
+pub fn bezier2(p0: f64, p1: f64, p2: f64, t: f64) -> f64 {
+    let time_complement = 1.0 - t;
+
+    time_complement * (time_complement * p0 + t * p1) + t * (time_complement * p1 + t * p2)
+}
