@@ -30,6 +30,17 @@ impl MapData {
         self.row_size
     }
 
+    /// Calculates the number of rows represented by this data.
+    pub fn rows(&self) -> usize {
+        self.data.len() / self.row_size +
+            if self.data.len() % self.row_size == 0 { 0 } else { 1 }
+    }
+
+    /// Alias for `::row_size()`.
+    pub fn cols(&self) -> usize {
+        self.row_size
+    }
+
     pub fn get(&self, x: usize, y: usize) -> Option<&Hex> {
         self.data.get(y * self.row_size + x)
     }

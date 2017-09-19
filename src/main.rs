@@ -61,6 +61,7 @@ fn main() {
     let window_settings =
         WindowSettings::new("ahistorics", [WINDOW_WIDTH, WINDOW_HEIGHT])
             .exit_on_esc(true)
+            .vsync(true)
             .samples(4)
             .opengl(OPENGL);
 
@@ -79,7 +80,7 @@ fn main() {
     // Initialize graphics backend that we can call `.draw()` on.
     let mut gl_graphics = GlGraphics::new(OPENGL);
 
-    // Initializing some coostants for draw testing. Will be moved.
+    // Initializing some coostants for draw testing. Will be moved/removed.
     let hex_scaled_height = 12.0;
     let hex_scaled_width =
         hex_scaled_height *
@@ -112,7 +113,14 @@ fn main() {
                     let hex = if let Some(h) = map_data.get(x, y) {
                         h
                     } else {
-                        eprintln!("indexed into nonexistent map data");
+                        eprintln!(
+                            "indexed into nonexistent map data: ({}, {}) \
+                             into data of dimensions ({}, {})",
+                            x,
+                            y,
+                            map_data.cols(),
+                            map_data.rows()
+                        );
 
                         return;
                     };

@@ -1,8 +1,6 @@
-use geometry::{grid_pos_to_real, SQRT_3_ON_2};
+use geometry::grid_pos_to_real;
 
-use graphics::math::{add, Vec2d};
-
-use matrix::rot;
+use graphics::math::Vec2d;
 
 
 pub struct Camera {
@@ -57,29 +55,17 @@ impl Camera {
     ) {
         let real_pos = grid_pos_to_real(&self.pos);
 
-        let rotation = rot(self.angle);
         let half_width  = self.width  / 2.0;
         let half_height = self.height / 2.0;
 
-        //let radius =
-            //(half_width * half_width + half_height * half_height).sqrt();
+        let radius =
+            (half_width * half_width + half_height * half_height).sqrt();
 
-        let tr = add(real_pos, rotation.vec_mul([ half_height,  half_width]));
-        let tl = add(real_pos, rotation.vec_mul([ half_height, -half_width]));
-        let bl = add(real_pos, rotation.vec_mul([-half_height, -half_width]));
-        let br = add(real_pos, rotation.vec_mul([-half_height,  half_width]));
+        let max_y = real_pos[1] + radius;
+        let min_y = (real_pos[1] - radius).max(0.0);
 
-        let max_y = tr[1].max(tl[1]).max(bl[1]).max(br[1]);
-        let sq_wave_max = ((max_y / 1.5 + 1.0) % 2.0 - 1.0).abs();
-        let min_y = tr[1].min(tl[1]).min(bl[1]).min(br[1]);
-        let sq_wave_min = ((min_y / 1.5 + 1.0) % 2.0 - 1.0).abs();
-
-        let max_x =
-            (tr[0].max(tl[0]).max(bl[0]).max(br[0]) / SQRT_3_ON_2 -
-                sq_wave_max.min(sq_wave_min)) / 2.0;
-        let min_x =
-            (tr[0].min(tl[0]).min(bl[0]).min(br[0]) / SQRT_3_ON_2 -
-                sq_wave_max.max(sq_wave_min)) / 2.0;
+        let max_x = real_pos[0] + radius;
+        let min_x = (real_pos[0] - radius).max(0.0);
 
         let min_col = min_x.floor().max(0.0) as usize;
         let max_col = max_x.ceil();
@@ -97,8 +83,8 @@ impl Camera {
             panic!("max_row < 0");
         };
 
-        for x in min_col .. max_col + 1 {
-            for y in min_row .. max_row + 1 {
+        for x in min_col .. max_col {
+            for y in min_row .. max_row {
                 draw_fn(x, y);
             }
         }
