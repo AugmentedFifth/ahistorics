@@ -1,6 +1,8 @@
-use geometry::{bezier2, grid_pos_to_real};
+use geometry::{bezier2, grid_pos_to_real, modulo};
 
-use graphics::math::{mul_scalar, sub, Vec2d};
+use graphics::math::{add, mul_scalar, sub, Vec2d};
+
+use std::f64::consts::PI;
 
 
 pub struct Camera {
@@ -27,6 +29,8 @@ pub struct Camera {
     angle:        f64,
     /// Angle that the camera is rotating to. Should be set to the orientation
     /// that the camera should currently be on.
+    ///
+    /// `0.0 <= target_angle < 2.0 * PI`
     target_angle: f64,
     /// Previous angle that the camera was at, only applicable when the camera
     /// is animating.
@@ -75,6 +79,14 @@ impl Camera {
         self.angle
     }
 
+    pub fn target_pos(&self) -> &Vec2d {
+        &self.target_pos
+    }
+
+    pub fn target_angle(&self) -> f64 {
+        self.target_angle
+    }
+
     /// Testing purposes only.
     pub fn inc_angle(&mut self, inc: f64) {
         self.angle += inc;
@@ -89,7 +101,7 @@ impl Camera {
     pub fn set_target_angle(&mut self, target: f64) {
         self.angle_state = 0.0;
         self.prev_angle = self.angle;
-        self.target_angle = target;
+        self.target_angle = modulo(target, 2.0 * PI);
     }
 
     pub fn step(&mut self, dt: f64) {
@@ -102,8 +114,16 @@ impl Camera {
             } else {
                 self.pos_state += dt / self.anim_time;
 
-                let new_pos_progress = bezier2(0.0, 0.75, 1, self.pos_state.min(1.0));
-                let disp = mul_scalar(sub(self.target_pos, self.prev_pos), new_pos_progress);
+                let new_pos_progress = bezier2(
+                    0.0,
+                    0.75,
+                    1.0,
+                    self.pos_state.min(1.0)
+                );
+                let disp = mul_scalar(
+                    sub(self.target_pos, self.prev_pos),
+                    new_pos_progress
+                );
 
                 self.pos = add(self.prev_pos, disp);
             }
@@ -118,8 +138,14 @@ impl Camera {
             } else {
                 self.angle_state += dt / self.anim_time;
 
-                let new_angle_progress = bezier2(0.0, 0.75, 1, self.angle_state.min(1.0));
-                let disp = (self.target_angle - self.prev_angle) * new_angle_progress;
+                let new_angle_progress = bezier2(
+                    0.0,
+                    0.75,
+                    1.0,
+                    self.angle_state.min(1.0)
+                );
+                let disp =
+                    (self.target_angle - self.prev_angle) * new_angle_progress;
 
                 self.angle = self.prev_angle + disp;
             }

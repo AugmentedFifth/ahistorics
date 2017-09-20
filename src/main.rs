@@ -5,6 +5,7 @@
 
 #![feature(collection_placement)]
 #![feature(placement_in_syntax)]
+#![feature(slice_patterns)]
 
 //! A 2D action RPG, written in pure Rust
 
@@ -23,6 +24,8 @@ extern crate vecmath;
 
 use camera::Camera;
 
+use controls::Controls;
+
 use geometry::{HEXAGON_POLY, SQRT_3_ON_2};
 
 use sdl2_window::Sdl2Window;
@@ -32,6 +35,8 @@ use graphics::polygon::Polygon;
 use map_data::{Hex, simulated_map_data};
 
 use matrix::{m, rot, scale_uni, trans};
+
+use std::f64::consts::FRAC_PI_6;
 
 use opengl_graphics::{GlGraphics, OpenGL};
 
@@ -89,7 +94,7 @@ fn main() {
     let mut camera = Camera::new(
         hex_scaled_width,
         hex_scaled_height,
-        150.0,
+        0.375,
         [0.0, 0.0]
     );
 
@@ -99,6 +104,8 @@ fn main() {
     let spacing_factor = 0.875;
 
     let new_hex = Polygon::new([0.875, 0.875, 0.875, 1.0]);
+
+    let mut controls = Controls::new();
 
     // The game's main loop.
     while let Some(event) = events.next(&mut window) {
@@ -110,7 +117,7 @@ fn main() {
                 graphics::clear([0.0625, 0.0625, 0.0625, 1.0], gl);
 
                 // Draw the scene.
-                let rotation = rot(camera.angle());
+                let rotation = rot(camera.angle() - FRAC_PI_6);
                 camera.draw(|x, y| {
                     let hex = if let Some(h) = map_data.get(x, y) {
                         h
@@ -163,7 +170,7 @@ fn main() {
                 }, side_len, side_len);
 
                 // Testingg
-                camera.inc_angle(0.01);
+                //camera.inc_angle(0.01);
 
                 /*
                 for x in 0..width {
@@ -204,16 +211,17 @@ fn main() {
         if let Some(update_args) = event.update_args() {
             // Step forward the physics logic.
             //scene.physics_update(update_args.dt);
+            camera.step(update_args.dt);
         }
 
         // If this event is a keyboard key being pressed down.
         if let Some(Button::Keyboard(key)) = event.press_args() {
-            //controls.handle_press(key);
+            controls.press(key, &mut camera);
         }
 
         // If this event is a keyboard key being released.
         if let Some(Button::Keyboard(key)) = event.release_args() {
-            //controls.handle_release(key);
+            controls.release(key);
         }
     }
 }
