@@ -83,7 +83,7 @@ impl Matrix {
                     k * self.repr[1][1],
                     k * self.repr[1][2],
                 ],
-            ]
+            ],
         }
     }
 

@@ -1,4 +1,4 @@
-use geometry::{bezier2, grid_pos_to_real, modulo};
+use geometry::{bezier2, modulo};
 
 use graphics::math::{add, mul_scalar, sub, Vec2d};
 
@@ -158,38 +158,8 @@ impl Camera {
         cols:        usize,
         rows:        usize
     ) {
-        let real_pos = grid_pos_to_real(&self.pos);
-
-        let half_width  = self.width  / 2.0;
-        let half_height = self.height / 2.0;
-
-        let radius =
-            (half_width * half_width + half_height * half_height).sqrt();
-
-        let max_y = real_pos[1] + radius;
-        let min_y = (real_pos[1] - radius).max(0.0);
-
-        let max_x = real_pos[0] + radius;
-        let min_x = (real_pos[0] - radius).max(0.0);
-
-        let min_col = min_x.floor().max(0.0) as usize;
-        let max_col = max_x.ceil();
-        let max_col = if max_col >= 0.0 {
-            (max_col as usize).min(cols)
-        } else {
-            panic!("max_col < 0");
-        };
-
-        let min_row = min_y.floor().max(0.0) as usize;
-        let max_row = max_y.ceil();
-        let max_row = if max_row >= 0.0 {
-            (max_row as usize).min(rows)
-        } else {
-            panic!("max_row < 0");
-        };
-
-        for x in min_col .. max_col {
-            for y in min_row .. max_row {
+        for x in 0..cols {
+            for y in 0..rows {
                 draw_fn(x, y);
             }
         }

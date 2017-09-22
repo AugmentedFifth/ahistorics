@@ -26,7 +26,7 @@ use camera::Camera;
 
 use controls::Controls;
 
-use geometry::{HEXAGON_POLY, SQRT_3_ON_2};
+use geometry::{AxialPoint, axial_to_real, HEXAGON_POLY};
 
 use sdl2_window::Sdl2Window;
 
@@ -35,8 +35,6 @@ use graphics::polygon::Polygon;
 use map_data::{Hex, simulated_map_data};
 
 use matrix::{m, rot, scale_uni, trans};
-
-use std::f64::consts::FRAC_PI_6;
 
 use opengl_graphics::{GlGraphics, OpenGL};
 
@@ -95,7 +93,7 @@ fn main() {
         hex_scaled_width,
         hex_scaled_height,
         0.375,
-        [0.0, 0.0]
+        [6.0, 7.0]
     );
 
     let side_len = 24;
@@ -117,9 +115,9 @@ fn main() {
                 graphics::clear([0.0625, 0.0625, 0.0625, 1.0], gl);
 
                 // Draw the scene.
-                let rotation = rot(camera.angle() - FRAC_PI_6);
+                let rotation = rot(camera.angle());
                 camera.draw(|x, y| {
-                    let hex = if let Some(h) = map_data.get(x, y) {
+                    let hex = if let Some(h) = map_data.get_rect(x, y) {
                         h
                     } else {
                         eprintln!(
@@ -138,22 +136,12 @@ fn main() {
                         return;
                     }
 
-                    let cartesian_x_offset = x as f64 - camera.x();
-                    let cartesian_y_offset = y as f64 - camera.y();
-
-                    let sq_wave =
-                        ((cartesian_y_offset + 1.0) % 2.0 - 1.0).abs();
-                    let x_pos =
-                        scale_factor *
-                        (2.0 * cartesian_x_offset + sq_wave) *
-                        SQRT_3_ON_2;
-                    let y_pos = scale_factor * cartesian_y_offset * 1.5;
-
-                    let pos = rotation.vec_mul([x_pos, y_pos]);
-                    let pos = [
-                        pos[0] + HALF_WINDOW_WIDTH,
-                        pos[1] + HALF_WINDOW_HEIGHT,
-                    ];
+                    let r = y as i32;
+                    let q = x as i32 - r / 2;
+                    let pos = axial_to_real(
+                        AxialPoint::new(q, r),
+                        scale_factor
+                    );
 
                     let transform =
                         rotation *
@@ -171,37 +159,6 @@ fn main() {
 
                 // Testingg
                 //camera.inc_angle(0.01);
-
-                /*
-                for x in 0..width {
-                    for y in 0..height {
-                        let x_pos =
-                            640.0 +
-                                scale_factor *
-                                spacing_factor *
-                                (2 * x + y % 2) as f64 *
-                                SQRT_3_ON_2;
-                        let y_pos =
-                            360.0 +
-                                scale_factor *
-                                spacing_factor *
-                                y as f64 *
-                                1.5;
-
-                        let transform =
-                            scale_uni(scale_factor) *
-                            trans([x_pos, y_pos]) *
-                            m(ctx.transform);
-
-                        new_hex.draw(
-                            HEXAGON_POLY,
-                            &ctx.draw_state,
-                            transform.repr,
-                            gl
-                        );
-                    }
-                }
-                */
 
                 //scene.draw(&ctx, gl);
             });

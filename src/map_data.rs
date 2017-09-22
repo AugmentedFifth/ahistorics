@@ -32,8 +32,7 @@ impl MapData {
 
     /// Calculates the number of rows represented by this data.
     pub fn rows(&self) -> usize {
-        self.data.len() / self.row_size +
-            if self.data.len() % self.row_size == 0 { 0 } else { 1 }
+        self.data.len() / self.row_size
     }
 
     /// Alias for `::row_size()`.
@@ -41,16 +40,16 @@ impl MapData {
         self.row_size
     }
 
-    pub fn get(&self, x: usize, y: usize) -> Option<&Hex> {
-        self.data.get(y * self.row_size + x)
+    pub fn get_cube(&self, x: i32, _: i32, z: i32) -> Option<&Hex> {
+        self.get_axial(x, z)
     }
 
-    pub fn for_each<F: FnMut(&Hex, usize, usize) -> ()>(&self, mut f: F) {
-        for (y, chunk) in self.data.chunks(self.row_size).enumerate() {
-            for (x, hex) in chunk.iter().enumerate() {
-                f(hex, x, y);
-            }
-        }
+    pub fn get_axial(&self, q: i32, r: i32) -> Option<&Hex> {
+        self.data.get((r * self.row_size as i32 + q + r / 2) as usize)
+    }
+
+    pub fn get_rect(&self, x: usize, y: usize) -> Option<&Hex> {
+        self.data.get(y * self.row_size + x)
     }
 }
 
