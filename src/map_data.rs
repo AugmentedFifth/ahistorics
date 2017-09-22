@@ -45,7 +45,7 @@ impl MapData {
     }
 
     pub fn get_axial(&self, q: i32, r: i32) -> Option<&Hex> {
-        self.data.get((r * self.row_size as i32 + q + r / 2) as usize)
+        self.data.get(((r + q / 2) * self.row_size as i32 + q) as usize)
     }
 
     pub fn get_rect(&self, x: usize, y: usize) -> Option<&Hex> {

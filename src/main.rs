@@ -26,7 +26,7 @@ use camera::Camera;
 
 use controls::Controls;
 
-use geometry::{AxialPoint, axial_to_real, HEXAGON_POLY};
+use geometry::{AxialPoint, axial_to_real, CubePoint, HEXAGON_POLY};
 
 use sdl2_window::Sdl2Window;
 
@@ -93,7 +93,7 @@ fn main() {
         hex_scaled_width,
         hex_scaled_height,
         0.375,
-        [6.0, 7.0]
+        CubePoint::new(0.0, 0.0, 0.0)
     );
 
     let side_len = 24;
@@ -115,7 +115,7 @@ fn main() {
                 graphics::clear([0.0625, 0.0625, 0.0625, 1.0], gl);
 
                 // Draw the scene.
-                let rotation = rot(camera.angle());
+                let rotation = rot(camera.angle().radians());
                 camera.draw(|x, y| {
                     let hex = if let Some(h) = map_data.get_rect(x, y) {
                         h
@@ -136,8 +136,8 @@ fn main() {
                         return;
                     }
 
-                    let r = y as i32;
-                    let q = x as i32 - r / 2;
+                    let q = x as i32;
+                    let r = y as i32 - q / 2;
                     let pos = axial_to_real(
                         AxialPoint::new(q, r),
                         scale_factor

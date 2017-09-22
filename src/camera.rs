@@ -1,8 +1,4 @@
-use geometry::{bezier2, modulo};
-
-use graphics::math::{add, mul_scalar, sub, Vec2d};
-
-use std::f64::consts::PI;
+use geometry::{Angle, bezier2, cube_lerp, CubePoint};
 
 
 pub struct Camera {
@@ -14,27 +10,25 @@ pub struct Camera {
     anim_time:    f64,
     /// Position of camera in terms of the underlying Cartesian grid of the
     /// hexagons.
-    pos:          Vec2d,
+    pos:          CubePoint<f64>,
     /// Position that the camera is moving towards. Should be set to the
     /// current player position, or just wherever the camera should be
     /// focussing.
-    target_pos:   Vec2d,
+    target_pos:   CubePoint<i32>,
     /// Previous position that the camera was at, only applicable when the
     /// camera is animating.
-    prev_pos:     Vec2d,
+    prev_pos:     CubePoint<f64>,
     /// Current progress of transition from `pos` to `target_pos`. `<= 0` is
     /// "just started", `>= 1` is "complete, no animation in progress".
     pos_state:    f64,
-    /// Angle the camera is oriented at, in radians.
-    angle:        f64,
+    /// Angle the camera is oriented at.
+    angle:        Angle,
     /// Angle that the camera is rotating to. Should be set to the orientation
     /// that the camera should currently be on.
-    ///
-    /// `0.0 <= target_angle < 2.0 * PI`
-    target_angle: f64,
+    target_angle: Angle,
     /// Previous angle that the camera was at, only applicable when the camera
     /// is animating.
-    prev_angle:   f64,
+    prev_angle:   Angle,
     /// Current progress of transition from `angle` to `target_angle`. `<= 0`
     /// is "just started", `>= 1` is "complete, no animation in progress".
     angle_state:  f64,
@@ -46,70 +40,77 @@ impl Camera {
         width:     f64,
         height:    f64,
         anim_time: f64,
-        start_pos: Vec2d
+        start_pos: CubePoint<f64>
     ) -> Self {
         Camera {
             width,
             height,
             anim_time,
             pos:          start_pos,
-            target_pos:   start_pos,
+            target_pos:   start_pos.map(|w| w as i32),
             prev_pos:     start_pos,
             pos_state:    1.0,
-            angle:        0.0,
-            target_angle: 0.0,
-            prev_angle:   0.0,
+            angle:        Angle::new(0.0),
+            target_angle: Angle::new(0.0),
+            prev_angle:   Angle::new(0.0),
             angle_state:  1.0,
         }
     }
 
-    pub fn pos(&self) -> &Vec2d {
+    pub fn pos(&self) -> &CubePoint<f64> {
         &self.pos
     }
 
-    pub fn x(&self) -> f64 {
-        self.pos[0]
+    pub fn a(&self) -> f64 {
+        self.pos.a
     }
 
-    pub fn y(&self) -> f64 {
-        self.pos[1]
+    pub fn b(&self) -> f64 {
+        self.pos.b
     }
 
-    pub fn angle(&self) -> f64 {
+    pub fn c(&self) -> f64 {
+        self.pos.c
+    }
+
+    pub fn angle(&self) -> Angle {
         self.angle
     }
 
-    pub fn target_pos(&self) -> &Vec2d {
+    pub fn target_pos(&self) -> &CubePoint<i32> {
         &self.target_pos
     }
 
-    pub fn target_angle(&self) -> f64 {
+    pub fn target_angle(&self) -> Angle {
         self.target_angle
     }
 
-    /// Testing purposes only.
-    pub fn inc_angle(&mut self, inc: f64) {
-        self.angle += inc;
-    }
-
-    pub fn set_target_pos(&mut self, target: Vec2d) {
+    pub fn set_target_pos(&mut self, target: CubePoint<i32>) {
         self.pos_state = 0.0;
         self.prev_pos = self.pos;
         self.target_pos = target;
     }
 
-    pub fn set_target_angle(&mut self, target: f64) {
+    pub fn set_target_angle(&mut self, target: Angle) {
         self.angle_state = 0.0;
         self.prev_angle = self.angle;
-        self.target_angle = modulo(target, 2.0 * PI);
+        self.target_angle = target;
+    }
+
+    pub fn inc_target_angle(&mut self, increment: Angle) {
+        self.target_angle += increment;
+    }
+
+    pub fn dec_target_angle(&mut self, decrement: Angle) {
+        self.target_angle -= decrement;
     }
 
     pub fn step(&mut self, dt: f64) {
-        if self.pos != self.target_pos {
+        if self.pos != self.target_pos.cast() {
             if self.pos_state >= 1.0 {
                 self.pos_state = dt / self.anim_time;
 
-                self.pos = self.target_pos;
+                self.pos = self.target_pos.cast();
                 self.prev_pos = self.pos;
             } else {
                 self.pos_state += dt / self.anim_time;
@@ -120,12 +121,12 @@ impl Camera {
                     1.0,
                     self.pos_state.min(1.0)
                 );
-                let disp = mul_scalar(
-                    sub(self.target_pos, self.prev_pos),
+
+                self.pos = cube_lerp(
+                    self.prev_pos,
+                    self.target_pos,
                     new_pos_progress
                 );
-
-                self.pos = add(self.prev_pos, disp);
             }
         }
 
@@ -144,10 +145,11 @@ impl Camera {
                     1.0,
                     self.angle_state.min(1.0)
                 );
-                let disp =
-                    (self.target_angle - self.prev_angle) * new_angle_progress;
 
-                self.angle = self.prev_angle + disp;
+                self.angle = self.prev_angle.lerp(
+                    &self.target_angle,
+                    new_angle_progress
+                );
             }
         }
     }

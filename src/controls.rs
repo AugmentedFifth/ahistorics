@@ -1,5 +1,7 @@
 use camera::Camera;
 
+use geometry::{cube_dir, Dir};
+
 use piston::input::keyboard::Key;
 
 use std::collections::HashSet;
@@ -25,49 +27,45 @@ impl Controls {
             match key {
                 Key::W => {
                     let target_angle = cam.target_angle();
-                    let turns =
-                        (target_angle / FRAC_PI_3).round() as usize % 6;
+                    let turns = (target_angle.radians() / FRAC_PI_3)
+                        .round() as usize % 6;
 
-                    let &[old_x, old_y] = cam.target_pos();
-                    let new_target_pos = match turns {
-                        0 => [old_x + old_y         % 2.0, old_y - 1.0],
-                        1 => [old_x - (old_y + 1.0) % 2.0, old_y - 1.0],
-                        2 => [old_x - 1.0,                 old_y      ],
-                        3 => [old_x - (old_y + 1.0) % 2.0, old_y + 1.0],
-                        4 => [old_x + old_y         % 2.0, old_y + 1.0],
-                        5 => [old_x + 1.0,                 old_y      ],
+                    let target_pos = cam.target_pos().clone();
+                    let target_dir = cube_dir(match turns {
+                        0 => Dir::Up,
+                        1 => Dir::UpLeft,
+                        2 => Dir::DownLeft,
+                        3 => Dir::Down,
+                        4 => Dir::DownRight,
+                        5 => Dir::UpRight,
                         t => panic!("turns = {}", t),
-                    };
+                    });
+                    let new_target_pos = target_pos + target_dir;
 
                     cam.set_target_pos(new_target_pos);
                 },
                 Key::S => {
                     let target_angle = cam.target_angle();
-                    let turns =
-                        (target_angle / FRAC_PI_3).round() as usize % 6;
+                    let turns = (target_angle.radians() / FRAC_PI_3)
+                        .round() as usize % 6;
 
-                    let &[old_x, old_y] = cam.target_pos();
-                    let new_target_pos = match turns {
-                        3 => [old_x + old_y         % 2.0, old_y - 1.0],
-                        4 => [old_x - (old_y + 1.0) % 2.0, old_y - 1.0],
-                        5 => [old_x - 1.0,                 old_y      ],
-                        0 => [old_x - (old_y + 1.0) % 2.0, old_y + 1.0],
-                        1 => [old_x + old_y         % 2.0, old_y + 1.0],
-                        2 => [old_x + 1.0,                 old_y      ],
+                    let target_pos = cam.target_pos().clone();
+                    let target_dir = cube_dir(match turns {
+                        3 => Dir::Up,
+                        4 => Dir::UpLeft,
+                        5 => Dir::DownLeft,
+                        0 => Dir::Down,
+                        1 => Dir::DownRight,
+                        2 => Dir::UpRight,
                         t => panic!("turns = {}", t),
-                    };
+                    });
+                    let new_target_pos = target_pos + target_dir;
 
                     cam.set_target_pos(new_target_pos);
                 },
-                Key::A => {
-                    let target_angle = cam.target_angle();
-                    cam.set_target_angle(target_angle + FRAC_PI_3);
-                },
-                Key::D => {
-                    let target_angle = cam.target_angle();
-                    cam.set_target_angle(target_angle - FRAC_PI_3);
-                },
-                _ => (),
+                Key::A => cam.inc_target_angle(FRAC_PI_3.into()),
+                Key::D => cam.dec_target_angle(FRAC_PI_3.into()),
+                _      => (),
             }
         }
     }
