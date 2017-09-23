@@ -140,8 +140,7 @@ fn main() {
 
                     let q = x as i32;
                     let r = y as i32 - q / 2;
-                    let abs_cube_pos: CubePoint<f64> =
-                        CubePoint::from_q_r(q, r).cast();
+                    let abs_cube_pos = CubePoint::from_q_r(q, r).cast();
 
                     let tile_minus_cam = abs_cube_pos - camera.pos().clone();
 
@@ -153,18 +152,30 @@ fn main() {
                         [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT]
                     );
 
-                    let transform =
-                        rotation *
-                        scale_uni(scale_factor * spacing_factor) *
-                        trans(pos) *
-                        m(ctx.transform);
+                    if pos[0] > -scale_factor &&
+                       pos[0] < WINDOW_WIDTH  as f64 + scale_factor &&
+                       pos[1] > -scale_factor &&
+                       pos[1] < WINDOW_HEIGHT as f64 + scale_factor
+                    {
+                        let depth_factor = if let &Hex::Tile(depth) = hex {
+                            1.0 + depth as f64 / 16.0
+                        } else {
+                            1.0
+                        };
 
-                    new_hex.draw(
-                        HEXAGON_POLY,
-                        &ctx.draw_state,
-                        transform.repr,
-                        gl
-                    );
+                        let transform =
+                            rotation *
+                            scale_uni(scale_factor * (spacing_factor * depth_factor).min(0.975)) *
+                            trans(pos) *
+                            m(ctx.transform);
+
+                        new_hex.draw(
+                            HEXAGON_POLY,
+                            &ctx.draw_state,
+                            transform.repr,
+                            gl
+                        );
+                    }
                 }, side_len, side_len);
             });
         }

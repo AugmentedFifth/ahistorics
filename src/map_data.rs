@@ -5,7 +5,7 @@ use rand::os::OsRng;
 #[derive(Debug, PartialEq, Eq)]
 pub enum Hex {
     Blank,
-    Tile,
+    Tile(i32),
 }
 
 pub struct MapData {
@@ -61,7 +61,11 @@ pub fn simulated_map_data(side_len: usize) -> MapData {
         "Failed to initialize operating-system-based RNG."
     );
     for _ in 0..area {
-        data.place_back() <- if rng.gen() { Hex::Blank } else { Hex::Tile };
+        data.place_back() <- if rng.gen() {
+            Hex::Blank
+        } else {
+            Hex::Tile(rng.gen_range(-6, 3))
+        };
     }
 
     MapData {

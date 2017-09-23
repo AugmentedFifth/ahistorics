@@ -17,3 +17,7 @@ vecmath = "*"
 
 [features]
 default = []
+
+[profile.release]
+lto = true
+panic = "abort"
