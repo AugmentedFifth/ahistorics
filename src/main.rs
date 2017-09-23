@@ -26,7 +26,9 @@ use camera::Camera;
 
 use controls::Controls;
 
-use geometry::{AxialPoint, axial_to_real, CubePoint, HEXAGON_POLY};
+use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
+
+use graphics::math::add;
 
 use sdl2_window::Sdl2Window;
 
@@ -138,9 +140,17 @@ fn main() {
 
                     let q = x as i32;
                     let r = y as i32 - q / 2;
-                    let pos = axial_to_real(
-                        AxialPoint::new(q, r),
-                        scale_factor
+                    let abs_cube_pos: CubePoint<f64> =
+                        CubePoint::from_q_r(q, r).cast();
+
+                    let tile_minus_cam = abs_cube_pos - camera.pos().clone();
+
+                    let pos = add(
+                        rotation.vec_mul(cube_to_real(
+                            tile_minus_cam,
+                            scale_factor
+                        )),
+                        [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT]
                     );
 
                     let transform =
@@ -156,11 +166,6 @@ fn main() {
                         gl
                     );
                 }, side_len, side_len);
-
-                // Testingg
-                //camera.inc_angle(0.01);
-
-                //scene.draw(&ctx, gl);
             });
         }
 

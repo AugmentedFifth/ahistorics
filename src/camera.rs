@@ -8,8 +8,7 @@ pub struct Camera {
     height:       f64,
     /// Total time that an animation phase of the camera takes.
     anim_time:    f64,
-    /// Position of camera in terms of the underlying Cartesian grid of the
-    /// hexagons.
+    /// Position of camera in terms of the underlying cubic coordinate space.
     pos:          CubePoint<f64>,
     /// Position that the camera is moving towards. Should be set to the
     /// current player position, or just wherever the camera should be
@@ -53,7 +52,7 @@ impl Camera {
             angle:        Angle::new(0.0),
             target_angle: Angle::new(0.0),
             prev_angle:   Angle::new(0.0),
-            angle_state:  1.0,
+            angle_state:  0.0,
         }
     }
 
@@ -98,19 +97,25 @@ impl Camera {
     }
 
     pub fn inc_target_angle(&mut self, increment: Angle) {
+        self.angle_state = 0.0;
+        self.prev_angle = self.angle;
         self.target_angle += increment;
     }
 
     pub fn dec_target_angle(&mut self, decrement: Angle) {
+        self.angle_state = 0.0;
+        self.prev_angle = self.angle;
         self.target_angle -= decrement;
     }
 
     pub fn step(&mut self, dt: f64) {
-        if self.pos != self.target_pos.cast() {
+        let target_pos_cast = self.target_pos.cast();
+
+        if self.pos != target_pos_cast {
             if self.pos_state >= 1.0 {
                 self.pos_state = dt / self.anim_time;
 
-                self.pos = self.target_pos.cast();
+                self.pos = target_pos_cast;
                 self.prev_pos = self.pos;
             } else {
                 self.pos_state += dt / self.anim_time;

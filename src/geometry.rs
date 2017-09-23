@@ -3,7 +3,7 @@ use graphics::types::Polygon;
 
 use std::f64::consts::PI;
 
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Neg};
 
 
 pub const PI_2: f64 = 2.0 * PI;
@@ -64,15 +64,21 @@ pub struct AxialPoint {
     pub r: i32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Angle {
     radians: f64,
 }
 
 
-impl<T> CubePoint<T> {
+impl<T: Clone + Neg<Output=T> + Sub<Output=T>> CubePoint<T> {
     pub fn new(a: T, b: T, c: T) -> Self {
         CubePoint { a, b, c }
+    }
+
+    pub fn from_q_r(q: T, r: T) -> Self {
+        let b = -q.clone() - r.clone();
+
+        CubePoint { a: q, b, c: r }
     }
 
     pub fn as_arr(self) -> [T; 3] {
@@ -92,6 +98,25 @@ impl<T> CubePoint<T> {
             a: self.a.into(),
             b: self.b.into(),
             c: self.c.into(),
+        }
+    }
+}
+
+impl<T: From<i32>> From<AxialPoint> for CubePoint<T> {
+    fn from(axial: AxialPoint) -> Self {
+        let a = axial.q.into();
+        let c = axial.r.into();
+        let b = (-axial.q - axial.r).into();
+
+        CubePoint { a, b, c }
+    }
+}
+
+impl<T: Into<i32>> Into<AxialPoint> for CubePoint<T> {
+    fn into(self) -> AxialPoint {
+        AxialPoint {
+            q: self.a.into(),
+            r: self.c.into(),
         }
     }
 }
@@ -116,6 +141,26 @@ impl<T: AddAssign> AddAssign for CubePoint<T> {
     }
 }
 
+impl<T: Sub<Output=T>> Sub for CubePoint<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        CubePoint {
+            a: self.a - rhs.a,
+            b: self.b - rhs.b,
+            c: self.c - rhs.c,
+        }
+    }
+}
+
+impl<T: SubAssign> SubAssign for CubePoint<T> {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.a -= rhs.a;
+        self.b -= rhs.b;
+        self.c -= rhs.c;
+    }
+}
+
 impl AxialPoint {
     pub fn new(q: i32, r: i32) -> Self {
         AxialPoint { q, r }
@@ -127,6 +172,24 @@ impl AxialPoint {
 
     pub fn as_arr(&self) -> [i32; 2] {
         [self.q, self.r]
+    }
+}
+
+impl Add for AxialPoint {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        AxialPoint {
+            q: self.q + rhs.q,
+            r: self.r + rhs.r,
+        }
+    }
+}
+
+impl AddAssign for AxialPoint {
+    fn add_assign(&mut self, rhs: Self) {
+        self.q += rhs.q;
+        self.r += rhs.r;
     }
 }
 
@@ -224,6 +287,14 @@ pub fn axial_dir(dir: Dir) -> AxialPoint {
 pub fn axial_to_real(axial_pos: AxialPoint, size: f64) -> Vec2d {
     let x = size * 1.5 * axial_pos.q as f64;
     let y = size * SQRT_3 * (axial_pos.r as f64 + axial_pos.q as f64 / 2.0);
+
+    [x, y]
+}
+
+pub fn cube_to_real<T: Into<f64>>(cube_pos: CubePoint<T>, size: f64) -> Vec2d {
+    let cube_a = cube_pos.a.into();
+    let x = size * 1.5 * cube_a;
+    let y = size * SQRT_3 * (cube_pos.c.into() + cube_a as f64 / 2.0);
 
     [x, y]
 }
