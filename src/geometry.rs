@@ -31,15 +31,6 @@ const CUBE_DIRS: &'static [CubePoint<i32>; 6] = &[
     CubePoint { a:  0, b: -1, c:  1 },
 ];
 
-const AXIAL_DIRS: &'static [AxialPoint; 6] = &[
-    AxialPoint { q:  1, r:  0 },
-    AxialPoint { q:  1, r: -1 },
-    AxialPoint { q:  0, r: -1 },
-    AxialPoint { q: -1, r:  0 },
-    AxialPoint { q: -1, r:  1 },
-    AxialPoint { q:  0, r:  1 },
-];
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Dir {
@@ -79,10 +70,6 @@ impl<T: Clone + Neg<Output=T> + Sub<Output=T>> CubePoint<T> {
         let b = -q.clone() - r.clone();
 
         CubePoint { a: q, b, c: r }
-    }
-
-    pub fn as_arr(self) -> [T; 3] {
-        [self.a, self.b, self.c]
     }
 
     pub fn map<U, F: Fn(T) -> U>(self, map_fn: F) -> CubePoint<U> {
@@ -165,14 +152,6 @@ impl AxialPoint {
     pub fn new(q: i32, r: i32) -> Self {
         AxialPoint { q, r }
     }
-
-    pub fn as_vec2d(&self) -> Vec2d {
-        [self.q as f64, self.r as f64]
-    }
-
-    pub fn as_arr(&self) -> [i32; 2] {
-        [self.q, self.r]
-    }
 }
 
 impl Add for AxialPoint {
@@ -200,10 +179,6 @@ impl Angle {
 
     pub fn radians(&self) -> f64 {
         self.radians
-    }
-
-    pub fn degrees(&self) -> f64 {
-        self.radians * 180.0 / PI
     }
 
     pub fn lerp(&self, end: &Self, t: f64) -> Self {
@@ -280,40 +255,12 @@ pub fn cube_dir(dir: Dir) -> CubePoint<i32> {
     CUBE_DIRS[dir as usize]
 }
 
-pub fn axial_dir(dir: Dir) -> AxialPoint {
-    AXIAL_DIRS[dir as usize]
-}
-
-pub fn axial_to_real(axial_pos: AxialPoint, size: f64) -> Vec2d {
-    let x = size * 1.5 * axial_pos.q as f64;
-    let y = size * SQRT_3 * (axial_pos.r as f64 + axial_pos.q as f64 / 2.0);
-
-    [x, y]
-}
-
 pub fn cube_to_real<T: Into<f64>>(cube_pos: CubePoint<T>, size: f64) -> Vec2d {
     let cube_a = cube_pos.a.into();
     let x = size * 1.5 * cube_a;
     let y = size * SQRT_3 * (cube_pos.c.into() + cube_a as f64 / 2.0);
 
     [x, y]
-}
-
-pub fn real_pos_to_grid(real_pos: &Vec2d, round_dir: i8) -> Vec2d {
-    let x = real_pos[0];
-    let y = real_pos[1];
-    let sq_wave = ((y / 1.5 + 1.0) % 2.0 - 1.0).abs();
-
-    let real_x = (x / SQRT_3_ON_2 - sq_wave) / 2.0;
-    let real_y = y / 1.5;
-
-    if round_dir > 0 {
-        [real_x.ceil(), real_y.ceil()]
-    } else if round_dir == 0 {
-        [real_x.round(), real_y.round()]
-    } else {
-        [real_x.floor(), real_y.floor()]
-    }
 }
 
 /// Calculates one point in a one-dimensional quadratic Bezier curve.

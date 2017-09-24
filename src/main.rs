@@ -88,15 +88,7 @@ fn main() {
 
     // Initializing some coostants for draw testing. Will be moved/removed.
     let hex_scaled_height = 12.0;
-    let hex_scaled_width =
-        hex_scaled_height *
-            WINDOW_WIDTH as f64 / WINDOW_HEIGHT as f64;
-    let mut camera = Camera::new(
-        hex_scaled_width,
-        hex_scaled_height,
-        0.375,
-        CubePoint::new(0.0, 0.0, 0.0)
-    );
+    let mut camera = Camera::new(0.375, CubePoint::new(0.0, 0.0, 0.0));
 
     let side_len = 24;
     let map_data = simulated_map_data(side_len);
@@ -142,7 +134,7 @@ fn main() {
                     let r = y as i32 - q / 2;
                     let abs_cube_pos = CubePoint::from_q_r(q, r).cast();
 
-                    let tile_minus_cam = abs_cube_pos - camera.pos().clone();
+                    let tile_minus_cam = abs_cube_pos - *camera.pos();
 
                     let pos = add(
                         rotation.vec_mul(cube_to_real(
@@ -157,7 +149,7 @@ fn main() {
                        pos[1] > -scale_factor &&
                        pos[1] < WINDOW_HEIGHT as f64 + scale_factor
                     {
-                        let depth_factor = if let &Hex::Tile(depth) = hex {
+                        let depth_factor = if let Hex::Tile(depth) = *hex {
                             1.0 + depth as f64 / 16.0
                         } else {
                             1.0

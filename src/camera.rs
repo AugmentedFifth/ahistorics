@@ -2,10 +2,6 @@ use geometry::{Angle, bezier2, cube_lerp, CubePoint};
 
 
 pub struct Camera {
-    /// Width of camera's view, in terms of the outer radius of a hexagon.
-    width:        f64,
-    /// Height of camera's view, in terms of the outer radius of a hexagon.
-    height:       f64,
     /// Total time that an animation phase of the camera takes.
     anim_time:    f64,
     /// Position of camera in terms of the underlying cubic coordinate space.
@@ -35,15 +31,8 @@ pub struct Camera {
 
 
 impl Camera {
-    pub fn new(
-        width:     f64,
-        height:    f64,
-        anim_time: f64,
-        start_pos: CubePoint<f64>
-    ) -> Self {
+    pub fn new(anim_time: f64, start_pos: CubePoint<f64>) -> Self {
         Camera {
-            width,
-            height,
             anim_time,
             pos:          start_pos,
             target_pos:   start_pos.map(|w| w as i32),
@@ -58,18 +47,6 @@ impl Camera {
 
     pub fn pos(&self) -> &CubePoint<f64> {
         &self.pos
-    }
-
-    pub fn a(&self) -> f64 {
-        self.pos.a
-    }
-
-    pub fn b(&self) -> f64 {
-        self.pos.b
-    }
-
-    pub fn c(&self) -> f64 {
-        self.pos.c
     }
 
     pub fn angle(&self) -> Angle {
@@ -88,12 +65,6 @@ impl Camera {
         self.pos_state = 0.0;
         self.prev_pos = self.pos;
         self.target_pos = target;
-    }
-
-    pub fn set_target_angle(&mut self, target: Angle) {
-        self.angle_state = 0.0;
-        self.prev_angle = self.angle;
-        self.target_angle = target;
     }
 
     pub fn inc_target_angle(&mut self, increment: Angle) {

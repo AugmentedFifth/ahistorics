@@ -1,7 +1,7 @@
 .PHONY: debug release
 
 debug:
-	cargo build --features "clippy"
+	cargo clippy && cargo build
 
 release:
 	cargo rustc --release -- -C target-cpu=native && strip ./target/release/ahistorics
