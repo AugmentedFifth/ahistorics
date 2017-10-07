@@ -14,6 +14,8 @@ mod controls;
 mod geometry;
 mod map_data;
 mod matrix;
+mod player;
+mod transitioned_grid_pos;
 
 extern crate sdl2_window;
 extern crate graphics;
@@ -144,9 +146,9 @@ fn main() {
                         [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT]
                     );
 
-                    if pos[0] > -scale_factor &&
+                    if pos[0] > -scale_factor                       &&
                        pos[0] < WINDOW_WIDTH  as f64 + scale_factor &&
-                       pos[1] > -scale_factor &&
+                       pos[1] > -scale_factor                       &&
                        pos[1] < WINDOW_HEIGHT as f64 + scale_factor
                     {
                         let depth_factor = if let Hex::Tile(depth) = *hex {
