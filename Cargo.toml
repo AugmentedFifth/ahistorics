@@ -5,14 +5,14 @@ authors = ["z"]
 
 [dependencies]
 clippy = {version = "*", optional = true}
-
 piston = "*"
 piston2d-graphics = "*"
 piston2d-opengl_graphics = "*"
 pistoncore-sdl2_window = "*"
-
 rand = "*"
-
+serde = "*"
+serde_derive = "*"
+toml = "*"
 vecmath = "*"
 
 [features]

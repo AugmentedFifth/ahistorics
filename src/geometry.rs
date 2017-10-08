@@ -42,7 +42,7 @@ pub enum Dir {
     Down      = 5,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CubePoint<T> {
     pub a: T,
     pub b: T,
@@ -187,18 +187,14 @@ impl Angle {
         if diff > PI {
             Angle {
                 radians: modulo(
-                    (1.0 - t) *
-                    (self.radians + PI_2) + t *
-                    end.radians,
+                    (1.0 - t) * (self.radians + PI_2) + t * end.radians,
                     PI_2
                 )
             }
         } else if diff < -PI {
             Angle {
                 radians: modulo(
-                    (1.0 - t) *
-                    self.radians + t *
-                    (end.radians + PI_2),
+                    (1.0 - t) * self.radians + t * (end.radians + PI_2),
                     PI_2
                 )
             }

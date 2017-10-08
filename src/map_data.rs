@@ -13,6 +13,12 @@ pub struct MapData {
     data:     Vec<Hex>,
 }
 
+pub struct MapDataIter<'a> {
+    i: usize,
+    data: &'a Vec<Hex>,
+    row_size: usize,
+}
+
 
 impl MapData {
     pub fn new(row_size: usize, data: Vec<Hex>) -> Self {
@@ -50,6 +56,31 @@ impl MapData {
 
     pub fn get_rect(&self, x: usize, y: usize) -> Option<&Hex> {
         self.data.get(y * self.row_size + x)
+    }
+
+    pub fn iter(&self) -> MapDataIter {
+        MapDataIter {
+            i: 0,
+            data: &self.data,
+            row_size: self.row_size,
+        }
+    }
+}
+
+impl<'a> Iterator for MapDataIter<'a> {
+    type Item = (&'a Hex, usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(hex) = self.data.get(self.i) {
+            let y = self.i / self.row_size;
+            let x = self.i % self.row_size;
+
+            self.i += 1;
+
+            Some((hex, x, y))
+        } else {
+            None
+        }
     }
 }
 

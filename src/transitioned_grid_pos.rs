@@ -26,9 +26,9 @@ pub struct TransitionedGridPos {
 }
 
 
-impl Camera {
+impl TransitionedGridPos {
     pub fn new(anim_time: f64, start_pos: CubePoint<f64>) -> Self {
-        Camera {
+        TransitionedGridPos {
             anim_time,
             pos:          start_pos,
             target_pos:   start_pos.map(|w| w as i32),

@@ -4,6 +4,10 @@ use geometry::{cube_dir, Dir};
 
 use piston::input::keyboard::Key;
 
+use player::Player;
+
+use positioned::Positioned;
+
 use std::collections::HashSet;
 use std::f64::consts::FRAC_PI_3;
 
@@ -20,51 +24,27 @@ impl Controls {
         }
     }
 
-    pub fn press(&mut self, key: Key, cam: &mut Camera) {
+    pub fn press(&mut self, key: Key, cam: &mut Camera, player: &mut Player) {
         if !self.pressed_keys.contains(&key) {
             self.pressed_keys.insert(key);
 
             match key {
                 Key::W => {
-                    let target_angle = cam.target_angle();
-                    let turns = (target_angle.radians() / FRAC_PI_3)
-                        .round() as usize % 6;
-
-                    let target_pos = cam.target_pos().clone();
-                    let target_dir = cube_dir(match turns {
-                        0 => Dir::Up,
-                        1 => Dir::UpLeft,
-                        2 => Dir::DownLeft,
-                        3 => Dir::Down,
-                        4 => Dir::DownRight,
-                        5 => Dir::UpRight,
-                        t => panic!("turns = {}", t),
-                    });
-                    let new_target_pos = target_pos + target_dir;
-
-                    cam.set_target_pos(new_target_pos);
+                    cam.unit_move(true);
+                    player.unit_move(true);
                 },
                 Key::S => {
-                    let target_angle = cam.target_angle();
-                    let turns = (target_angle.radians() / FRAC_PI_3)
-                        .round() as usize % 6;
-
-                    let target_pos = cam.target_pos().clone();
-                    let target_dir = cube_dir(match turns {
-                        3 => Dir::Up,
-                        4 => Dir::UpLeft,
-                        5 => Dir::DownLeft,
-                        0 => Dir::Down,
-                        1 => Dir::DownRight,
-                        2 => Dir::UpRight,
-                        t => panic!("turns = {}", t),
-                    });
-                    let new_target_pos = target_pos + target_dir;
-
-                    cam.set_target_pos(new_target_pos);
+                    cam.unit_move(false);
+                    player.unit_move(false);
                 },
-                Key::A => cam.inc_target_angle(FRAC_PI_3.into()),
-                Key::D => cam.dec_target_angle(FRAC_PI_3.into()),
+                Key::A => {
+                    cam.pos.inc_target_angle(FRAC_PI_3.into());
+                    player.pos.inc_target_angle(FRAC_PI_3.into());
+                },
+                Key::D => {
+                    cam.pos.dec_target_angle(FRAC_PI_3.into());
+                    player.pos.dec_target_angle(FRAC_PI_3.into());
+                },
                 _      => (),
             }
         }

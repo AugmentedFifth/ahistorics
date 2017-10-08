@@ -15,13 +15,18 @@ mod geometry;
 mod map_data;
 mod matrix;
 mod player;
+mod positioned;
+mod settings;
 mod transitioned_grid_pos;
 
-extern crate sdl2_window;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 extern crate rand;
+extern crate sdl2_window;
+#[macro_use]
+extern crate serde_derive;
+extern crate toml;
 extern crate vecmath;
 
 use camera::Camera;
@@ -34,11 +39,12 @@ use graphics::math::add;
 
 use sdl2_window::Sdl2Window;
 
+use graphics::rectangle::{Border, Rectangle, Shape};
 use graphics::polygon::Polygon;
 
 use map_data::{Hex, simulated_map_data};
 
-use matrix::{m, rot, scale_uni, trans};
+use matrix::{m, Matrix, rot, scale_uni, trans};
 
 use opengl_graphics::{GlGraphics, OpenGL};
 
@@ -51,6 +57,8 @@ use piston::input::{
     UpdateEvent,
 };
 use piston::window::WindowSettings;
+
+use player::Player;
 
 
 const WINDOW_WIDTH:  u32 = 1_366;
@@ -88,9 +96,12 @@ fn main() {
     // Initialize graphics backend that we can call `.draw()` on.
     let mut gl_graphics = GlGraphics::new(OPENGL);
 
-    // Initializing some coostants for draw testing. Will be moved/removed.
+    // Initialize player.
+    let mut player = Player::new(0.25, CubePoint::new(0.0, 0.0, 0.0));
+
+    // Initializing some constants for draw testing. Will be moved/removed.
     let hex_scaled_height = 12.0;
-    let mut camera = Camera::new(0.375, CubePoint::new(0.0, 0.0, 0.0));
+    let mut camera = Camera::new(0.4, CubePoint::new(0.0, 0.0, 0.0));
 
     let side_len = 24;
     let map_data = simulated_map_data(side_len);
@@ -99,6 +110,14 @@ fn main() {
 
     let new_hex = Polygon::new([0.875, 0.875, 0.875, 1.0]);
 
+    let player_square = Rectangle::new([0.8, 0.1, 0.8, 1.0])
+        .shape(Shape::Bevel(1.0))
+        .border(Border {
+            color: [0.025, 0.725, 0.025, 1.0],
+            radius: 1.0,
+        });
+
+    // Initialize controls to handle keypresses, clicks, etc.
     let mut controls = Controls::new();
 
     // The game's main loop.
@@ -111,35 +130,20 @@ fn main() {
                 graphics::clear([0.0625, 0.0625, 0.0625, 1.0], gl);
 
                 // Draw the scene.
-                let rotation = rot(camera.angle().radians());
-                camera.draw(|x, y| {
-                    let hex = if let Some(h) = map_data.get_rect(x, y) {
-                        h
-                    } else {
-                        eprintln!(
-                            "indexed into nonexistent map data: ({}, {}) \
-                             into data of dimensions ({}, {})",
-                            x,
-                            y,
-                            map_data.cols(),
-                            map_data.rows()
-                        );
-
-                        return;
-                    };
-
+                let cam_rotation = rot(camera.pos.angle().radians());
+                for (hex, x, y) in map_data.iter() {
                     if hex == &Hex::Blank {
-                        return;
+                        continue;
                     }
 
                     let q = x as i32;
                     let r = y as i32 - q / 2;
                     let abs_cube_pos = CubePoint::from_q_r(q, r).cast();
 
-                    let tile_minus_cam = abs_cube_pos - *camera.pos();
+                    let tile_minus_cam = abs_cube_pos - *camera.pos.pos();
 
                     let pos = add(
-                        rotation.vec_mul(cube_to_real(
+                        cam_rotation.vec_mul(cube_to_real(
                             tile_minus_cam,
                             scale_factor
                         )),
@@ -158,8 +162,11 @@ fn main() {
                         };
 
                         let transform =
-                            rotation *
-                            scale_uni(scale_factor * (spacing_factor * depth_factor).min(0.975)) *
+                            cam_rotation *
+                            scale_uni(
+                                scale_factor *
+                                (spacing_factor * depth_factor).min(0.975)
+                            ) *
                             trans(pos) *
                             m(ctx.transform);
 
@@ -170,7 +177,34 @@ fn main() {
                             gl
                         );
                     }
-                }, side_len, side_len);
+                }
+
+                let player_abs_pos = *player.pos.pos();
+                let player_minus_cam = player_abs_pos - *camera.pos.pos();
+                let player_disp = add(
+                    cam_rotation.vec_mul(cube_to_real(
+                        player_minus_cam,
+                        scale_factor
+                    )),
+                    [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT]
+                );
+
+                let player_abs_angle = player.pos.angle();
+                let player_ang_minus_cam =
+                    player_abs_angle - camera.pos.angle();
+
+                let player_trans =
+                    rot(-player_ang_minus_cam.radians()) *
+                    trans(player_disp) *
+                    m(ctx.transform);
+
+                player_square.draw(
+                    [-scale_factor / 4.0, -scale_factor / 4.0,
+                      scale_factor / 2.0,  scale_factor / 2.0],
+                    &ctx.draw_state,
+                    player_trans.repr,
+                    gl
+                );
             });
         }
 
@@ -178,12 +212,13 @@ fn main() {
         if let Some(update_args) = event.update_args() {
             // Step forward the physics logic.
             //scene.physics_update(update_args.dt);
-            camera.step(update_args.dt);
+            camera.pos.step(update_args.dt);
+            player.pos.step(update_args.dt);
         }
 
         // If this event is a keyboard key being pressed down.
         if let Some(Button::Keyboard(key)) = event.press_args() {
-            controls.press(key, &mut camera);
+            controls.press(key, &mut camera, &mut player);
         }
 
         // If this event is a keyboard key being released.
