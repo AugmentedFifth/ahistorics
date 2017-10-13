@@ -8,3 +8,4 @@ Cargo.lock
 tokamak.toml
 *.iml
 .idea/
+*.ses

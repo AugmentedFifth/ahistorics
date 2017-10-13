@@ -37,7 +37,6 @@ use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
 
 use graphics::math::add;
 
-use sdl2_window::Sdl2Window;
 
 use graphics::rectangle::{Border, Rectangle, Shape};
 use graphics::polygon::Polygon;
@@ -45,6 +44,8 @@ use graphics::polygon::Polygon;
 use map_data::{Hex, simulated_map_data};
 
 use matrix::{m, Matrix, rot, scale_uni, trans};
+
+use sdl2_window::Sdl2Window;
 
 use opengl_graphics::{GlGraphics, OpenGL};
 
@@ -59,6 +60,8 @@ use piston::input::{
 use piston::window::WindowSettings;
 
 use player::Player;
+
+use settings::Settings;
 
 
 const WINDOW_WIDTH:  u32 = 1_366;
@@ -96,6 +99,9 @@ fn main() {
     // Initialize graphics backend that we can call `.draw()` on.
     let mut gl_graphics = GlGraphics::new(OPENGL);
 
+    // Retrieve settings.
+    let settings = Settings::get_from("ahistorics_settings.toml").unwrap();
+
     // Initialize player.
     let mut player = Player::new(0.25, CubePoint::new(0.0, 0.0, 0.0));
 
@@ -108,12 +114,12 @@ fn main() {
     let scale_factor = WINDOW_HEIGHT as f64 / hex_scaled_height;
     let spacing_factor = 0.875;
 
-    let new_hex = Polygon::new([0.875, 0.875, 0.875, 1.0]);
+    let new_hex = Polygon::new(settings.colors.foreground_color);
 
-    let player_square = Rectangle::new([0.8, 0.1, 0.8, 1.0])
+    let player_square = Rectangle::new(settings.colors.player_color)
         .shape(Shape::Bevel(1.0))
         .border(Border {
-            color: [0.025, 0.725, 0.025, 1.0],
+            color: settings.colors.player_outline_color,
             radius: 1.0,
         });
 
@@ -127,7 +133,7 @@ fn main() {
             // Start drawing to the screen.
             gl_graphics.draw(render_args.viewport(), |ctx, gl| {
                 // Clear the entire window.
-                graphics::clear([0.0625, 0.0625, 0.0625, 1.0], gl);
+                graphics::clear(settings.colors.background_color, gl);
 
                 // Draw the scene.
                 let cam_rotation = rot(camera.pos.angle().radians());

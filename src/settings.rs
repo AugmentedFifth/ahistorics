@@ -11,14 +11,14 @@ use std::path::Path;
 
 
 pub struct Settings {
-    colors: Colors,
+    pub colors: Colors,
 }
 
 pub struct Colors {
-    background_color:     Color,
-    foreground_color:     Color,
-    player_color:         Color,
-    player_outline_color: Color,
+    pub background_color:     Color,
+    pub foreground_color:     Color,
+    pub player_color:         Color,
+    pub player_outline_color: Color,
 }
 
 #[derive(Deserialize)]
@@ -64,16 +64,20 @@ impl Settings {
     }
 
     fn unraw(raw: RawSettings) -> Result<Self, SettingsError> {
-        let background_color = hex_to_color(&raw.background_color)?;
-        let foreground_color = hex_to_color(&raw.foreground_color)?;
-        let player_color = hex_to_color(&raw.player_color)?;
-        let player_outline_color = hex_to_color(&raw.player_outline_color)?;
+        let background_color = hex_to_color(&raw.colors.background_color)?;
+        let foreground_color = hex_to_color(&raw.colors.foreground_color)?;
+        let player_color = hex_to_color(&raw.colors.player_color)?;
+        let player_outline_color = hex_to_color(&raw.colors.player_outline_color)?;
 
-        Ok(Settings {
+        let colors = Colors {
             background_color,
             foreground_color,
             player_color,
             player_outline_color,
+        };
+
+        Ok(Settings {
+            colors,
         })
     }
 }
