@@ -43,7 +43,7 @@ use graphics::polygon::Polygon;
 
 use map_data::{Hex, simulated_map_data};
 
-use matrix::{m, Matrix, rot, scale_uni, trans};
+use matrix::{m, rot, scale_uni, trans};
 
 use sdl2_window::Sdl2Window;
 
