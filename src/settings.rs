@@ -63,6 +63,56 @@ impl Settings {
         }
     }
 
+    pub fn get_from_recur<P: AsRef<Path>>(
+        settings_path: P
+    ) -> Result<Self, SettingsError> {
+        let path = settings_path.as_ref();
+        if let Ok(s) = Self::get_from(path) {
+            return Ok(s);
+        }
+
+        let filename = if let Some(f) = path.file_name() {
+            f
+        } else {
+            return Err(SettingsError::Io(format!(
+                "{:?} is a malformed path that doesn't refer \
+                 to any file name.",
+                path
+            )));
+        };
+
+        let canonical_path = if let Some(cp) = path.parent() {
+            cp
+        } else {
+            return Err(SettingsError::Io(format!(
+                "No file with the name {:?} found in the specified path \
+                or any of its parents/ancestors.",
+                filename
+            )));
+        };
+        let canonical_path_buf = match canonical_path.canonicalize() {
+            Ok(cp) => cp,
+            Err(e) => return Err(SettingsError::Io(
+                e.description().to_string()
+            )),
+        };
+        let mut canonical_path = canonical_path_buf.as_path();
+
+        while let Some(p) = canonical_path.parent() {
+            if let Ok(s) = Self::get_from(p.join(filename)) {
+                return Ok(s);
+            }
+
+            canonical_path = p;
+        }
+
+        Err(SettingsError::Io(format!(
+            "No file with the name {:?} found in the specified path \
+             or any of its parents/ancestors.",
+            filename
+        )))
+    }
+
     fn unraw(raw: RawSettings) -> Result<Self, SettingsError> {
         let background_color = hex_to_color(&raw.colors.background_color)?;
         let foreground_color = hex_to_color(&raw.colors.foreground_color)?;
