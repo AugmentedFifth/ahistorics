@@ -1,12 +1,16 @@
 use graphics::types::Color;
 
 use toml;
+use toml::de;
 
+use std::borrow::Cow;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::fs::File;
+use std::io;
 use std::io::Read;
+use std::num::ParseIntError;
 use std::path::Path;
 
 
@@ -36,9 +40,10 @@ struct RawColors {
 
 #[derive(Debug)]
 pub enum SettingsError {
-    Io(String),
-    De(String),
-    Parse(String),
+    Io(io::Error),
+    De(de::Error),
+    ParseInt(ParseIntError),
+    FilePath(String),
 }
 
 
@@ -46,21 +51,11 @@ impl Settings {
     pub fn get_from<P: AsRef<Path>>(
         settings_path: P
     ) -> Result<Self, SettingsError> {
-        let mut settings_file = match File::open(settings_path) {
-            Ok(f)  => f,
-            Err(e) => return Err(
-                SettingsError::Io(e.description().to_string())
-            ),
-        };
+        let mut settings_file = File::open(settings_path)?;
         let mut contents = String::new();
-        if let Err(e) = settings_file.read_to_string(&mut contents) {
-            return Err(SettingsError::Io(e.description().to_string()));
-        }
+        settings_file.read_to_string(&mut contents)?;
 
-        match toml::from_str(&contents) {
-            Ok(s)  => Self::unraw(s),
-            Err(e) => Err(SettingsError::De(e.description().to_string())),
-        }
+        Self::unraw(toml::from_str(&contents)?)
     }
 
     pub fn get_from_recur<P: AsRef<Path>>(
@@ -74,7 +69,7 @@ impl Settings {
         let filename = if let Some(f) = path.file_name() {
             f
         } else {
-            return Err(SettingsError::Io(format!(
+            return Err(SettingsError::FilePath(format!(
                 "{:?} is a malformed path that doesn't refer \
                  to any file name.",
                 path
@@ -84,18 +79,13 @@ impl Settings {
         let canonical_path = if let Some(cp) = path.parent() {
             cp
         } else {
-            return Err(SettingsError::Io(format!(
+            return Err(SettingsError::FilePath(format!(
                 "No file with the name {:?} found in the specified path \
-                or any of its parents/ancestors.",
+                 nor any of its parents/ancestors.",
                 filename
             )));
         };
-        let canonical_path_buf = match canonical_path.canonicalize() {
-            Ok(cp) => cp,
-            Err(e) => return Err(SettingsError::Io(
-                e.description().to_string()
-            )),
-        };
+        let canonical_path_buf = canonical_path.canonicalize()?;
         let mut canonical_path = canonical_path_buf.as_path();
 
         while let Some(p) = canonical_path.parent() {
@@ -106,9 +96,9 @@ impl Settings {
             canonical_path = p;
         }
 
-        Err(SettingsError::Io(format!(
+        Err(SettingsError::FilePath(format!(
             "No file with the name {:?} found in the specified path \
-             or any of its parents/ancestors.",
+             nor any of its parents/ancestors.",
             filename
         )))
     }
@@ -134,44 +124,77 @@ impl Settings {
 
 impl Display for SettingsError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            &SettingsError::Io(ref msg) => write!(f, "I/O error: {}", msg),
-            &SettingsError::De(ref msg) => write!(
-                f,
-                "Deserialization error: {}",
-                msg
-            ),
-            &SettingsError::Parse(ref msg) => write!(
-                f,
-                "Raw settings parse error: {}",
-                msg
-            ),
+        match *self {
+            SettingsError::Io(ref e) =>
+                write!(f, "IO error: {}", e),
+            SettingsError::De(ref e) =>
+                write!(f, "Deserialization error: {}", e),
+            SettingsError::ParseInt(ref e) =>
+                write!(f, "Integer parse error: {}", e),
+            SettingsError::FilePath(ref s) =>
+                write!(f, "File path error: {}", s),
         }
     }
 }
 
+impl Error for SettingsError {
+    fn description(&self) -> &str {
+        match *self {
+            SettingsError::Io(ref e)       => e.description(),
+            SettingsError::De(ref e)       => e.description(),
+            SettingsError::ParseInt(ref e) => e.description(),
+            SettingsError::FilePath(ref s) => s,
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match *self {
+            SettingsError::Io(ref e)       => Some(e),
+            SettingsError::De(ref e)       => Some(e),
+            SettingsError::ParseInt(ref e) => Some(e),
+            SettingsError::FilePath(_)     => None,
+        }
+    }
+}
+
+impl From<io::Error> for SettingsError {
+    fn from(err: io::Error) -> Self {
+        SettingsError::Io(err)
+    }
+}
+
+impl From<de::Error> for SettingsError {
+    fn from(err: de::Error) -> Self {
+        SettingsError::De(err)
+    }
+}
+
+impl From<ParseIntError> for SettingsError {
+    fn from(err: ParseIntError) -> Self {
+        SettingsError::ParseInt(err)
+    }
+}
+
 pub fn hex_to_color(hex_str: &str) -> Result<Color, SettingsError> {
-    match u32::from_str_radix(&hex_str[1..], 16) {
-        Ok(parsed_int) => if parsed_int > 0xFFFFFF {
-            let r = parsed_int >> 24 & 0xFF;
-            let g = parsed_int >> 16 & 0xFF;
-            let b = parsed_int >> 8  & 0xFF;
-            let a = parsed_int       & 0xFF;
+    let parsed_int = u32::from_str_radix(&hex_str[1..], 16)?;
+    if parsed_int > 0xFFFFFF {
+        let r = parsed_int >> 24 & 0xFF;
+        let g = parsed_int >> 16 & 0xFF;
+        let b = parsed_int >> 8  & 0xFF;
+        let a = parsed_int       & 0xFF;
 
-            Ok([r as f32 / 255.0,
-                g as f32 / 255.0,
-                b as f32 / 255.0,
-                a as f32 / 255.0])
-        } else {
-            let r = parsed_int >> 16 & 0xFF;
-            let g = parsed_int >> 8  & 0xFF;
-            let b = parsed_int       & 0xFF;
+        Ok([r as f32 / 255.0,
+            g as f32 / 255.0,
+            b as f32 / 255.0,
+            a as f32 / 255.0])
+    } else {
+        let r = parsed_int >> 16 & 0xFF;
+        let g = parsed_int >> 8  & 0xFF;
+        let b = parsed_int       & 0xFF;
 
-            Ok([r as f32 / 255.0,
-                g as f32 / 255.0,
-                b as f32 / 255.0,
-                1.0])
-        },
-        Err(e) => Err(SettingsError::Parse(e.description().to_string())),
+        Ok([r as f32 / 255.0,
+            g as f32 / 255.0,
+            b as f32 / 255.0,
+            1.0])
     }
 }
