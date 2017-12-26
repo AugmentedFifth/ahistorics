@@ -3,13 +3,10 @@ use graphics::types::Color;
 use toml;
 use toml::de;
 
-use std::borrow::Cow;
 use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter};
 use std::fs::File;
-use std::io;
-use std::io::Read;
+use std::io::{self, Read};
 use std::num::ParseIntError;
 use std::path::Path;
 
@@ -107,7 +104,8 @@ impl Settings {
         let background_color = hex_to_color(&raw.colors.background_color)?;
         let foreground_color = hex_to_color(&raw.colors.foreground_color)?;
         let player_color = hex_to_color(&raw.colors.player_color)?;
-        let player_outline_color = hex_to_color(&raw.colors.player_outline_color)?;
+        let player_outline_color =
+            hex_to_color(&raw.colors.player_outline_color)?;
 
         let colors = Colors {
             background_color,

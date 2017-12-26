@@ -1,7 +1,5 @@
 use camera::Camera;
 
-use geometry::{cube_dir, Dir};
-
 use piston::input::keyboard::Key;
 
 use player::Player;

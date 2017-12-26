@@ -100,7 +100,8 @@ fn main() {
     let mut gl_graphics = GlGraphics::new(OPENGL);
 
     // Retrieve settings.
-    let settings = Settings::get_from_recur("./ahistorics_settings.toml").unwrap();
+    let settings =
+        Settings::get_from_recur("./ahistorics_settings.toml").unwrap();
 
     // Initialize player.
     let mut player = Player::new(0.25, CubePoint::new(0.0, 0.0, 0.0));
