@@ -21,3 +21,6 @@ default = []
 [profile.release]
 lto = true
 panic = "abort"
+opt-level = 3
+debug = false
+debug-assertions = false
