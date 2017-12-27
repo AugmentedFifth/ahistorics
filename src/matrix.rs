@@ -2,8 +2,8 @@
 //! graphics API. Provides convenience methods and operator overloads. Also
 //! implements `Deref` and `DerefMut` targetting `Matrix2d`.
 
-use graphics::math;
 use graphics::math::{
+    self,
     get_scale,
     identity,
     Matrix2d,

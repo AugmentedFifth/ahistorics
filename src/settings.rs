@@ -1,7 +1,6 @@
 use graphics::types::Color;
 
-use toml;
-use toml::de;
+use toml::{self, de};
 
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};

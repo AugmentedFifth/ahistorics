@@ -36,8 +36,6 @@ use controls::Controls;
 use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
 
 use graphics::math::add;
-
-
 use graphics::rectangle::{Border, Rectangle, Shape};
 use graphics::polygon::Polygon;
 
