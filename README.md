@@ -5,6 +5,6 @@
 ```bash
 $ git clone https://gitlab.com/AugmentedFourth/ahistorics.git
 $ cd ahistorics
-$ make release
+$ make native
 $ ./target/release/ahistorics
 ```
