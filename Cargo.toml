@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["z"]
 
 [dependencies]
+failure = "*"
+failure_derive = "*"
 fnv = "*"
 piston = "*"
 piston2d-graphics = "*"

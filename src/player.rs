@@ -36,7 +36,7 @@ impl Positioned for Player {
             3 => Dir::Down,
             4 => Dir::DownRight,
             5 => Dir::UpRight,
-            t => panic!("turns = {}", t),
+            t => panic!("turns == {}", t),
         });
         let new_target_pos = if forwards {
             target_pos + target_dir
