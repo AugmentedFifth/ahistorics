@@ -12,7 +12,6 @@ use graphics::math::{
     translate,
     Vec2d,
 };
-
 use std::ops::{
     Add,
     AddAssign,
@@ -26,7 +25,6 @@ use std::ops::{
     Sub,
     SubAssign,
 };
-
 use vecmath::{
     mat2x3_add,
     mat2x3_det,

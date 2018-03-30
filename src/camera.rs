@@ -1,9 +1,6 @@
 use geometry::{cube_dir, CubePoint, Dir};
-
 use positioned::Positioned;
-
 use std::f64::consts::FRAC_PI_3;
-
 use transitioned_grid_pos::TransitionedGridPos;
 
 

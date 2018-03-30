@@ -1,13 +1,8 @@
 use camera::Camera;
-
 use fnv::FnvHashSet as Set;
-
 use piston::input::keyboard::Key;
-
 use player::Player;
-
 use positioned::Positioned;
-
 use std::f64::consts::FRAC_PI_3;
 
 

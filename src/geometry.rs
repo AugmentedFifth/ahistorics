@@ -1,8 +1,5 @@
-use graphics::math::Vec2d;
-use graphics::types::Polygon;
-
+use graphics::{math::Vec2d, types::Polygon};
 use std::f64::consts::PI;
-
 use std::ops::{Add, AddAssign, Sub, SubAssign, Neg};
 
 

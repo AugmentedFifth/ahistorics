@@ -1,5 +1,4 @@
-use rand::Rng;
-use rand::os::OsRng;
+use rand::{Rng, os::OsRng};
 
 
 #[derive(Debug, PartialEq, Eq)]

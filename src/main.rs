@@ -2,7 +2,7 @@
 
 #![feature(collection_placement)]
 #![feature(placement_in_syntax)]
-#![feature(slice_patterns)]
+// #![feature(slice_patterns)]
 
 //! A 2D action RPG, written in pure Rust
 
@@ -31,35 +31,29 @@ extern crate toml;
 extern crate vecmath;
 
 use camera::Camera;
-
 use controls::Controls;
-
 use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
-
-use graphics::math::add;
-use graphics::rectangle::{Border, Rectangle, Shape};
-use graphics::polygon::Polygon;
-
-use map_data::{Hex, simulated_map_data};
-
-use matrix::{m, rot, scale_uni, trans};
-
-use sdl2_window::Sdl2Window;
-
-use opengl_graphics::{GlGraphics, OpenGL};
-
-use piston::event_loop::{Events, EventSettings};
-use piston::input::{
-    Button,
-    PressEvent,
-    ReleaseEvent,
-    RenderEvent,
-    UpdateEvent,
+use graphics::{
+    math::add,
+    rectangle::{Border, Rectangle, Shape},
+    polygon::Polygon,
 };
-use piston::window::WindowSettings;
-
+use map_data::{Hex, simulated_map_data};
+use matrix::{m, rot, scale_uni, trans};
+use sdl2_window::Sdl2Window;
+use opengl_graphics::{GlGraphics, OpenGL};
+use piston::{
+    event_loop::{Events, EventSettings},
+    input::{
+        Button,
+        PressEvent,
+        ReleaseEvent,
+        RenderEvent,
+        UpdateEvent,
+    },
+    window::WindowSettings,
+};
 use player::Player;
-
 use settings::Settings;
 
 

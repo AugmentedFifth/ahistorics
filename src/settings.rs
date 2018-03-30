@@ -1,13 +1,7 @@
 use failure::Error;
-
 use graphics::types::Color;
-
 use toml;
-
-use std::ffi::OsString;
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::{ffi::OsString, fs::File, io::Read, path::{Path, PathBuf}};
 
 
 pub struct Settings {
@@ -50,9 +44,7 @@ pub enum SettingsError {
 
 
 impl Settings {
-    pub fn get_from<P: AsRef<Path>>(
-        settings_path: P
-    ) -> Result<Self, Error> {
+    pub fn get_from<P: AsRef<Path>>(settings_path: P) -> Result<Self, Error> {
         let mut settings_file = File::open(settings_path)?;
         let mut contents = String::new();
         settings_file.read_to_string(&mut contents)?;
