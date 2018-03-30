@@ -1,29 +1,46 @@
+use camera::Camera;
+use draw::SPACING_FACTOR;
+use drawable::Drawable;
+use failure::Error;
+use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
+use graphics::{Context, math::add, polygon::Polygon, types::Color};
+use matrix::{m, rot, scale_uni, trans};
+use opengl_graphics::GlGraphics;
 use rand::{Rng, os::OsRng};
+use window::{
+    HALF_WINDOW_HEIGHT,
+    HALF_WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    WINDOW_WIDTH,
+};
 
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Hex {
     Blank,
     Tile(i32),
 }
 
+#[derive(Clone)]
 pub struct MapData {
     row_size: usize,
     data:     Vec<Hex>,
+    poly:     Polygon,
 }
 
 pub struct MapDataIter<'a> {
-    i: usize,
-    data: &'a Vec<Hex>,
+    i:        usize,
+    data:     &'a Vec<Hex>,
     row_size: usize,
 }
 
 
 impl MapData {
-    pub fn new(row_size: usize, data: Vec<Hex>) -> Self {
-        MapData {
+    pub fn new(row_size: usize, data: Vec<Hex>, color: Color) -> Self {
+        Self {
             row_size,
             data,
+            poly: Polygon::new(color),
         }
     }
 
@@ -83,13 +100,70 @@ impl<'a> Iterator for MapDataIter<'a> {
     }
 }
 
-pub fn simulated_map_data(side_len: usize) -> MapData {
+impl Drawable for MapData {
+    fn draw(&self, camera: &Camera, ctx: &Context, gl: &mut GlGraphics) {
+        // TODO: `hex_scaled_height` should be dynamic state.
+        let hex_scaled_height = 12.0;
+        let scale_factor = f64::from(WINDOW_HEIGHT) / hex_scaled_height;
+
+        for (hex, x, y) in self.iter() {
+            if hex == &Hex::Blank {
+                continue;
+            }
+
+            let q = x as i32;
+            let r = y as i32 - q / 2;
+            let abs_cube_pos = CubePoint::from_q_r(q, r).cast();
+
+            let tile_minus_cam = abs_cube_pos - *camera.pos.pos();
+
+            let cam_rotation = rot(camera.pos.angle().radians());
+            let pos = add(
+                cam_rotation.vec_mul(cube_to_real(
+                    tile_minus_cam,
+                    scale_factor,
+                )),
+                [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT],
+            );
+
+            if pos[0] > -scale_factor                          &&
+               pos[0] < f64::from(WINDOW_WIDTH) + scale_factor &&
+               pos[1] > -scale_factor                          &&
+               pos[1] < f64::from(WINDOW_HEIGHT) + scale_factor
+            {
+                let depth_factor = if let Hex::Tile(depth) = *hex {
+                    1.0 + f64::from(depth) / 16.0
+                } else {
+                    1.0
+                };
+
+                let transform =
+                    cam_rotation *
+                    scale_uni(
+                        scale_factor *
+                        (SPACING_FACTOR * depth_factor).min(0.975)
+                    ) *
+                    trans(pos) *
+                    m(ctx.transform);
+
+                self.poly.draw(
+                    HEXAGON_POLY,
+                    &ctx.draw_state,
+                    transform.repr,
+                    gl
+                );
+            }
+        }
+    }
+}
+
+pub fn simulated_map_data(side_len: usize,
+                          color:    Color) -> Result<MapData, Error>
+{
     let area = side_len * side_len;
     let mut data = Vec::with_capacity(area);
 
-    let mut rng = OsRng::new().expect(
-        "Failed to initialize operating-system-based RNG."
-    );
+    let mut rng = OsRng::new()?;
     for _ in 0..area {
         data.place_back() <- if rng.gen() {
             Hex::Blank
@@ -98,8 +172,5 @@ pub fn simulated_map_data(side_len: usize) -> MapData {
         };
     }
 
-    MapData {
-        row_size: side_len,
-        data,
-    }
+    Ok(MapData::new(side_len, data, color))
 }
