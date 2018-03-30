@@ -8,10 +8,11 @@ use std::ops::{Add, AddAssign, Sub, SubAssign, Neg};
 
 pub const PI_2: f64 = 2.0 * PI;
 
-pub const SQRT_3: f64 = 1.732050807568877193176604123436845839023590087890625;
+pub const SQRT_3: f64 =
+    1.732_050_807_568_877_193_176_604_123_436_845_839_023_590_087_890_625;
 
 pub const SQRT_3_ON_2: f64 =
-    0.8660254037844385965883020617184229195117950439453125;
+    0.866_025_403_784_438_596_588_302_061_718_422_919_511_795_043_945_312_5;
 
 pub const HEXAGON_POLY: Polygon<'static> = &[
     [ 1.0,          0.0],
@@ -22,7 +23,7 @@ pub const HEXAGON_POLY: Polygon<'static> = &[
     [ 0.5, -SQRT_3_ON_2],
 ];
 
-const CUBE_DIRS: &'static [CubePoint<i32>; 6] = &[
+const CUBE_DIRS: &[CubePoint<i32>; 6] = &[
     CubePoint { a:  1, b: -1, c:  0 },
     CubePoint { a:  1, b:  0, c: -1 },
     CubePoint { a:  0, b:  1, c: -1 },

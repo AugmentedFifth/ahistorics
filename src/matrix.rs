@@ -37,7 +37,7 @@ use vecmath::{
 };
 
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Matrix {
     pub repr: Matrix2d,
 }
@@ -49,7 +49,7 @@ impl Matrix {
         Matrix { repr: m }
     }
 
-    /// Same as `::new()`, creates a new matrix that is the identity matrix.
+    /// Creates a new matrix that is the identity matrix.
     pub fn identity() -> Self {
         Matrix { repr: identity() }
     }
@@ -121,12 +121,6 @@ impl Deref for Matrix {
 impl DerefMut for Matrix {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.repr
-    }
-}
-
-impl Clone for Matrix {
-    fn clone(&self) -> Self {
-        *self
     }
 }
 

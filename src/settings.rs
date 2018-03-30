@@ -174,7 +174,7 @@ impl From<ParseIntError> for SettingsError {
 
 pub fn hex_to_color(hex_str: &str) -> Result<Color, SettingsError> {
     let parsed_int = u32::from_str_radix(&hex_str[1..], 16)?;
-    if parsed_int > 0xFFFFFF {
+    if parsed_int > 0xFF_FF_FF {
         let r = parsed_int >> 24 & 0xFF;
         let g = parsed_int >> 16 & 0xFF;
         let b = parsed_int >> 8  & 0xFF;

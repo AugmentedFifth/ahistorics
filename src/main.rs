@@ -1,6 +1,3 @@
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-
 #![deny(missing_docs)]
 
 #![feature(collection_placement)]
@@ -19,6 +16,7 @@ mod positioned;
 mod settings;
 mod transitioned_grid_pos;
 
+extern crate fnv;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
@@ -110,7 +108,7 @@ fn main() {
 
     let side_len = 24;
     let map_data = simulated_map_data(side_len);
-    let scale_factor = WINDOW_HEIGHT as f64 / hex_scaled_height;
+    let scale_factor = f64::from(WINDOW_HEIGHT) / hex_scaled_height;
     let spacing_factor = 0.875;
 
     let new_hex = Polygon::new(settings.colors.foreground_color);
@@ -155,13 +153,13 @@ fn main() {
                         [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT]
                     );
 
-                    if pos[0] > -scale_factor                       &&
-                       pos[0] < WINDOW_WIDTH  as f64 + scale_factor &&
-                       pos[1] > -scale_factor                       &&
-                       pos[1] < WINDOW_HEIGHT as f64 + scale_factor
+                    if pos[0] > -scale_factor                          &&
+                       pos[0] < f64::from(WINDOW_WIDTH) + scale_factor &&
+                       pos[1] > -scale_factor                          &&
+                       pos[1] < f64::from(WINDOW_HEIGHT) + scale_factor
                     {
                         let depth_factor = if let Hex::Tile(depth) = *hex {
-                            1.0 + depth as f64 / 16.0
+                            1.0 + f64::from(depth) / 16.0
                         } else {
                             1.0
                         };
@@ -228,7 +226,7 @@ fn main() {
 
         // If this event is a keyboard key being released.
         if let Some(Button::Keyboard(key)) = event.release_args() {
-            controls.release(key);
+            controls.release(&key);
         }
     }
 }

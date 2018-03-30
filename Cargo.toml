@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["z"]
 
 [dependencies]
-clippy = {version = "*", optional = true}
+fnv = "*"
 piston = "*"
 piston2d-graphics = "*"
 piston2d-opengl_graphics = "*"
@@ -24,3 +24,5 @@ panic = "abort"
 opt-level = 3
 debug = false
 debug-assertions = false
+rpath = false
+codegen-units = 1

@@ -26,7 +26,7 @@ impl Positioned for Camera {
         let turns = (target_angle.radians() / FRAC_PI_3)
             .round() as usize % 6;
 
-        let target_pos = self.pos.target_pos().clone();
+        let target_pos = *self.pos.target_pos();
         let target_dir = cube_dir(match turns {
             0 => Dir::Up,
             1 => Dir::UpLeft,
