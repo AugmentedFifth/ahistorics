@@ -1,8 +1,5 @@
 #![allow(missing_docs)]
 
-#![feature(collection_placement)]
-#![feature(placement_in_syntax)]
-
 //! A 2D action RPG, written in pure Rust
 
 mod camera;

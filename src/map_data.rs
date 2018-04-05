@@ -165,11 +165,11 @@ pub fn simulated_map_data(side_len: usize,
 
     let mut rng = OsRng::new()?;
     for _ in 0..area {
-        data.place_back() <- if rng.gen() {
+        data.push(if rng.gen() {
             Hex::Blank
         } else {
             Hex::Tile(rng.gen_range(-6, 3))
-        };
+        });
     }
 
     Ok(MapData::new(side_len, data, color))
