@@ -4,10 +4,12 @@ use toml;
 use std::{ffi::OsString, fs::File, io::Read, path::{Path, PathBuf}};
 
 
+#[derive(Debug, Clone)]
 pub struct Settings {
     pub colors: Colors,
 }
 
+#[derive(Debug, Clone)]
 pub struct Colors {
     pub background_color:     Color,
     pub foreground_color:     Color,
@@ -49,12 +51,12 @@ impl Settings {
         let mut contents = String::new();
         settings_file.read_to_string(&mut contents)?;
 
-        Self::unraw(toml::from_str(&contents)?)
+        Self::unraw(&toml::from_str(&contents)?)
     }
 
-    pub fn get_from_recur<P: AsRef<Path>>(
-        settings_path: P
-    ) -> Result<Self, Error> {
+    pub fn get_from_recur<P>(settings_path: P) -> Result<Self, Error>
+        where P: AsRef<Path>
+    {
         let path = settings_path.as_ref();
         if let Ok(s) = Self::get_from(path) {
             return Ok(s);
@@ -83,7 +85,7 @@ impl Settings {
         }.into())
     }
 
-    fn unraw(raw: RawSettings) -> Result<Self, Error> {
+    fn unraw(raw: &RawSettings) -> Result<Self, Error> {
         let background_color = hex_to_color(&raw.colors.background_color)?;
         let foreground_color = hex_to_color(&raw.colors.foreground_color)?;
         let player_color = hex_to_color(&raw.colors.player_color)?;

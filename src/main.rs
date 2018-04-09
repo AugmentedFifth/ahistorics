@@ -13,6 +13,7 @@ mod player;
 mod positioned;
 mod scene;
 mod settings;
+mod temporal;
 mod transitioned_grid_pos;
 mod window;
 
@@ -56,7 +57,7 @@ use settings::Settings;
 fn main() {
     if let Err(e) = main_() {
         eprintln!("Something went wrong:");
-        eprintln!("    {}.", e);
+        e.causes().for_each(|c| eprintln!("    {}.", c));
 
         std::process::exit(1);
     }
@@ -70,14 +71,14 @@ fn main_() -> Result<(), Error> {
     let camera = Camera::new(0.4, CubePoint::new(0.0, 0.0, 0.0));
     let scene = Scene::new(camera, map, player);
 
-    main_loop(window::events(), window::init()?, scene, settings)
+    main_loop(window::events(), window::init()?, scene, &settings)
 }
 
 /// The main game loop.
 fn main_loop<W>(mut events: Events,
                 mut window: W,
                 mut scene:  Scene,
-                settings:   Settings) -> Result<(), Error>
+                settings:   &Settings) -> Result<(), Error>
     where W: Window
 {
     // Initialize graphics backend that we can call `.draw()` on.

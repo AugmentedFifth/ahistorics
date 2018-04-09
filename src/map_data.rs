@@ -6,6 +6,7 @@ use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
 use graphics::{Context, math::add, polygon::Polygon, types::Color};
 use matrix::{m, rot, scale_uni, trans};
 use opengl_graphics::GlGraphics;
+use positioned::Positioned;
 use rand::{Rng, os::OsRng};
 use window::{
     HALF_WINDOW_HEIGHT,
@@ -76,8 +77,8 @@ impl MapData {
 
     pub fn iter(&self) -> MapDataIter {
         MapDataIter {
-            i: 0,
-            data: &self.data,
+            i:        0,
+            data:     &self.data,
             row_size: self.row_size,
         }
     }
@@ -87,16 +88,14 @@ impl<'a> Iterator for MapDataIter<'a> {
     type Item = (&'a Hex, usize, usize);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(hex) = self.data.get(self.i) {
+        self.data.get(self.i).map(|hex| {
             let y = self.i / self.row_size;
             let x = self.i % self.row_size;
 
             self.i += 1;
 
-            Some((hex, x, y))
-        } else {
-            None
-        }
+            (hex, x, y)
+        })
     }
 }
 
@@ -106,18 +105,14 @@ impl Drawable for MapData {
         let hex_scaled_height = 12.0;
         let scale_factor = f64::from(WINDOW_HEIGHT) / hex_scaled_height;
 
-        for (hex, x, y) in self.iter() {
-            if hex == &Hex::Blank {
-                continue;
-            }
-
+        for (hex, x, y) in self.iter().filter(|h| h.0 != &Hex::Blank) {
             let q = x as i32;
             let r = y as i32 - q / 2;
             let abs_cube_pos = CubePoint::from_q_r(q, r).cast();
 
-            let tile_minus_cam = abs_cube_pos - *camera.pos.pos();
+            let tile_minus_cam = abs_cube_pos - *camera.pos();
 
-            let cam_rotation = rot(camera.pos.angle().radians());
+            let cam_rotation = rot(camera.angle().radians());
             let pos = add(
                 cam_rotation.vec_mul(cube_to_real(
                     tile_minus_cam,
@@ -150,7 +145,7 @@ impl Drawable for MapData {
                     HEXAGON_POLY,
                     &ctx.draw_state,
                     transform.repr,
-                    gl
+                    gl,
                 );
             }
         }
