@@ -1,11 +1,12 @@
-use geometry::{cube_dir, CubePoint, Dir};
+use geometry::{Angle, cube_dir, CubePoint, Dir};
 use positioned::Positioned;
 use std::f64::consts::FRAC_PI_3;
+use temporal::Temporal;
 use transitioned_grid_pos::TransitionedGridPos;
 
 
 pub struct Camera {
-    pub pos: TransitionedGridPos,
+    pos: TransitionedGridPos,
 }
 
 
@@ -40,5 +41,27 @@ impl Positioned for Camera {
         };
 
         self.pos.set_target_pos(new_target_pos);
+    }
+
+    fn turn(&mut self, anticlockwise: bool) {
+        if anticlockwise {
+            self.pos.inc_target_angle(FRAC_PI_3.into());
+        } else {
+            self.pos.dec_target_angle(FRAC_PI_3.into());
+        }
+    }
+
+    fn pos(&self) -> &CubePoint<f64> {
+        self.pos.pos()
+    }
+
+    fn angle(&self) -> Angle {
+        self.pos.angle()
+    }
+}
+
+impl Temporal for Camera {
+    fn step(&mut self, dt: f64) {
+        self.pos.step(dt);
     }
 }

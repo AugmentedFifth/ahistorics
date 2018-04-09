@@ -3,7 +3,6 @@ use fnv::FnvHashSet as Set;
 use piston::input::keyboard::Key;
 use player::Player;
 use positioned::Positioned;
-use std::f64::consts::FRAC_PI_3;
 
 
 pub struct Controls {
@@ -30,12 +29,12 @@ impl Controls {
                     player.unit_move(false);
                 },
                 Key::A => {
-                    cam.pos.inc_target_angle(FRAC_PI_3.into());
-                    player.pos.inc_target_angle(FRAC_PI_3.into());
+                    cam.turn(true);
+                    player.turn(true);
                 },
                 Key::D => {
-                    cam.pos.dec_target_angle(FRAC_PI_3.into());
-                    player.pos.dec_target_angle(FRAC_PI_3.into());
+                    cam.turn(false);
+                    player.turn(false);
                 },
                 _ => (),
             }
@@ -43,8 +42,6 @@ impl Controls {
     }
 
     pub fn release(&mut self, key: &Key) {
-        if self.pressed_keys.contains(key) {
-            self.pressed_keys.remove(key);
-        }
+        self.pressed_keys.remove(key);
     }
 }

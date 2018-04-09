@@ -1,6 +1,6 @@
 //! Thin wrapper around the `Matrix2d` type provided and accepted by piston's
 //! graphics API. Provides convenience methods and operator overloads. Also
-//! implements `Deref` and `DerefMut` targetting `Matrix2d`.
+//! implements `Deref` and `DerefMut` targeting `Matrix2d`.
 
 use graphics::math::{
     self,

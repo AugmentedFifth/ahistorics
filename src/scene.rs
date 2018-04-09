@@ -4,6 +4,7 @@ use graphics::Context;
 use opengl_graphics::GlGraphics;
 use map_data::MapData;
 use player::Player;
+use temporal::Temporal;
 
 
 pub struct Scene {
@@ -19,8 +20,8 @@ impl Scene {
     }
 
     pub fn step(&mut self, dt: f64) {
-        self.camera.pos.step(dt);
-        self.player.pos.step(dt);
+        self.camera.step(dt);
+        self.player.step(dt);
     }
 }
 

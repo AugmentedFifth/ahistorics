@@ -11,7 +11,7 @@ pub const SQRT_3: f64 =
 pub const SQRT_3_ON_2: f64 =
     0.866_025_403_784_438_596_588_302_061_718_422_919_511_795_043_945_312_5;
 
-pub const HEXAGON_POLY: Polygon<'static> = &[
+pub const HEXAGON_POLY: Polygon = &[
     [ 1.0,          0.0],
     [ 0.5,  SQRT_3_ON_2],
     [-0.5,  SQRT_3_ON_2],
@@ -187,14 +187,14 @@ impl Angle {
                 radians: modulo(
                     (1.0 - t) * (self.radians + PI_2) + t * end.radians,
                     PI_2
-                )
+                ),
             }
         } else if diff < -PI {
             Angle {
                 radians: modulo(
                     (1.0 - t) * self.radians + t * (end.radians + PI_2),
                     PI_2
-                )
+                ),
             }
         } else {
             Angle { radians: (1.0 - t) * self.radians + t * end.radians }
@@ -257,6 +257,34 @@ pub fn cube_to_real<T: Into<f64>>(cube_pos: CubePoint<T>, size: f64) -> Vec2d {
     [x, y]
 }
 
+pub fn real_to_cube(real_pos: Vec2d, size: f64) -> CubePoint<f64> {
+    let [x, y] = real_pos;
+
+    let q = x * (2.0 / 3.0) / size;
+    let r = (SQRT_3 * y - x) / (3.0 * size);
+
+    CubePoint::from_q_r(q, r)
+}
+
+pub fn cube_round(cube_pos: CubePoint<f64>) -> CubePoint<i32> {
+    let (ra, rb, rc) = (cube_pos.a.round(),
+                        cube_pos.b.round(),
+                        cube_pos.c.round());
+
+    let (da, db, dc) = ((ra - cube_pos.a).abs(),
+                        (rb - cube_pos.b).abs(),
+                        (rc - cube_pos.c).abs());
+
+    let (ra, rb, rc) = (ra as i32, rb as i32, rc as i32);
+    if da > db && da > dc {
+        CubePoint::new(-rb - rc, rb,       rc      )
+    } else if db > dc {
+        CubePoint::new(ra,       -ra - rc, rc      )
+    } else {
+        CubePoint::new(ra,       rb,       -ra - rb)
+    }
+}
+
 /// Calculates one point in a one-dimensional quadratic Bezier curve.
 ///
 /// # Arguments
@@ -284,14 +312,26 @@ pub fn lerp(v0: f64, v1: f64, t: f64) -> f64 {
     (1.0 - t) * v0 + t * v1
 }
 
-pub fn cube_lerp<T: Into<f64>, U: Into<f64>>(
-    v0: CubePoint<T>,
-    v1: CubePoint<U>,
-    t:  f64
-) -> CubePoint<f64> {
+pub fn cube_lerp<T, U>(v0: CubePoint<T>,
+                       v1: CubePoint<U>,
+                       t:  f64) -> CubePoint<f64>
+    where T: Into<f64>, U: Into<f64>
+{
     CubePoint {
         a: lerp(v0.a.into(), v1.a.into(), t),
         b: lerp(v0.b.into(), v1.b.into(), t),
         c: lerp(v0.c.into(), v1.c.into(), t),
     }
+}
+
+pub fn triangulate(cube_pos: CubePoint<f64>) -> [CubePoint<i32>; 3] {
+    let (ra, rb, rc) = (cube_pos.a.round() as i32,
+                        cube_pos.b.round() as i32,
+                        cube_pos.c.round() as i32);
+
+    [
+        CubePoint::new(-rb - rc, rb,       rc      ),
+        CubePoint::new(ra,       -ra - rc, rc      ),
+        CubePoint::new(ra,       rb,       -ra - rb),
+    ]
 }
