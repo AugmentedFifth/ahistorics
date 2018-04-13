@@ -10,16 +10,16 @@ pub const SPACING_FACTOR: f64 = 0.875;
 
 
 /// Start drawing to the screen.
-pub fn draw(gl_graphics: &mut GlGraphics,
+pub fn draw(gl:          &mut GlGraphics,
             render_args: &RenderArgs,
             settings:    &Settings,
             scene:       &Scene)
 {
-    gl_graphics.draw(render_args.viewport(), |ctx, gl| {
+    gl.draw(render_args.viewport(), |ctx, g| {
         // Clear the entire window.
-        graphics::clear(settings.colors.background_color, gl);
+        graphics::clear(settings.colors.background_color, g);
 
         // Draw the scene.
-        scene.draw(&scene.camera, &ctx, gl);
+        scene.draw(&scene.camera, &ctx, g);
     });
 }

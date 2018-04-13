@@ -3,9 +3,8 @@ use draw::SPACING_FACTOR;
 use drawable::Drawable;
 use failure::Error;
 use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
-use graphics::{Context, math::add, polygon::Polygon, types::Color};
+use graphics::{Context, Graphics, math::add, polygon::Polygon, types::Color};
 use matrix::{m, rot, scale_uni, trans};
-use opengl_graphics::GlGraphics;
 use positioned::Positioned;
 use rand::{Rng, os::OsRng};
 use window::{
@@ -100,7 +99,7 @@ impl<'a> Iterator for MapDataIter<'a> {
 }
 
 impl Drawable for MapData {
-    fn draw(&self, camera: &Camera, ctx: &Context, gl: &mut GlGraphics) {
+    fn draw<G: Graphics>(&self, camera: &Camera, ctx: &Context, g: &mut G) {
         // TODO: `hex_scaled_height` should be dynamic state.
         let hex_scaled_height = 12.0;
         let scale_factor = f64::from(WINDOW_HEIGHT) / hex_scaled_height;
@@ -145,7 +144,7 @@ impl Drawable for MapData {
                     HEXAGON_POLY,
                     &ctx.draw_state,
                     transform.repr,
-                    gl,
+                    g,
                 );
             }
         }

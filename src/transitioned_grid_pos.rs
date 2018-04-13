@@ -1,4 +1,5 @@
 use geometry::{Angle, bezier2, cube_lerp, CubePoint};
+use std::ops::{AddAssign, SubAssign};
 
 
 #[derive(Debug, Clone)]
@@ -63,13 +64,17 @@ impl TransitionedGridPos {
         self.target_pos = target;
     }
 
-    pub fn inc_target_angle(&mut self, increment: Angle) {
+    pub fn inc_target_angle<A>(&mut self, increment: A)
+        where Angle: AddAssign<A>
+    {
         self.angle_state = 0.0;
         self.prev_angle = self.angle;
         self.target_angle += increment;
     }
 
-    pub fn dec_target_angle(&mut self, decrement: Angle) {
+    pub fn dec_target_angle<A>(&mut self, decrement: A)
+        where Angle: SubAssign<A>
+    {
         self.angle_state = 0.0;
         self.prev_angle = self.angle;
         self.target_angle -= decrement;

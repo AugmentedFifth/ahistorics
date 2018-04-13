@@ -1,8 +1,7 @@
 use camera::Camera;
-use graphics::Context;
-use opengl_graphics::GlGraphics;
+use graphics::{Context, Graphics};
 
 
 pub trait Drawable {
-    fn draw(&self, camera: &Camera, ctx: &Context, gl: &mut GlGraphics);
+    fn draw<G: Graphics>(&self, camera: &Camera, ctx: &Context, g: &mut G);
 }

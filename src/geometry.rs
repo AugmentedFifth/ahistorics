@@ -31,6 +31,7 @@ const CUBE_DIRS: &[CubePoint<i32>; 6] = &[
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum Dir {
     DownRight = 0,
     UpRight   = 1,
@@ -224,9 +225,23 @@ impl Add for Angle {
     }
 }
 
+impl Add<f64> for Angle {
+    type Output = Self;
+
+    fn add(self, rhs: f64) -> Self::Output {
+        Angle::new(self.radians + rhs)
+    }
+}
+
 impl AddAssign for Angle {
     fn add_assign(&mut self, rhs: Self) {
         self.radians = modulo(self.radians + rhs.radians, PI_2);
+    }
+}
+
+impl AddAssign<f64> for Angle {
+    fn add_assign(&mut self, rhs: f64) {
+        self.radians = modulo(self.radians + rhs, PI_2);
     }
 }
 
@@ -238,9 +253,23 @@ impl Sub for Angle {
     }
 }
 
+impl Sub<f64> for Angle {
+    type Output = Self;
+
+    fn sub(self, rhs: f64) -> Self::Output {
+        Angle::new(self.radians - rhs)
+    }
+}
+
 impl SubAssign for Angle {
     fn sub_assign(&mut self, rhs: Self) {
         self.radians = modulo(self.radians - rhs.radians, PI_2);
+    }
+}
+
+impl SubAssign<f64> for Angle {
+    fn sub_assign(&mut self, rhs: f64) {
+        self.radians = modulo(self.radians - rhs, PI_2);
     }
 }
 

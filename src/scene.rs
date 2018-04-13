@@ -1,7 +1,6 @@
 use camera::Camera;
 use drawable::Drawable;
-use graphics::Context;
-use opengl_graphics::GlGraphics;
+use graphics::{Context, Graphics};
 use map_data::MapData;
 use player::Player;
 use temporal::Temporal;
@@ -26,8 +25,8 @@ impl Scene {
 }
 
 impl Drawable for Scene {
-    fn draw(&self, camera: &Camera, ctx: &Context, gl: &mut GlGraphics) {
-        self.map.draw(camera, ctx, gl);
-        self.player.draw(camera, ctx, gl);
+    fn draw<G: Graphics>(&self, camera: &Camera, ctx: &Context, g: &mut G) {
+        self.map.draw(camera, ctx, g);
+        self.player.draw(camera, ctx, g);
     }
 }

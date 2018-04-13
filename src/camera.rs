@@ -22,7 +22,7 @@ impl Positioned for Camera {
     fn unit_move(&mut self, forwards: bool) {
         let target_angle = self.pos.target_angle();
         let turns = (target_angle.radians() / FRAC_PI_3)
-            .round() as usize % 6;
+            .round() as u8 % 6;
 
         let target_pos = *self.pos.target_pos();
         let target_dir = cube_dir(match turns {
@@ -32,7 +32,7 @@ impl Positioned for Camera {
             3 => Dir::Down,
             4 => Dir::DownRight,
             5 => Dir::UpRight,
-            t => panic!("turns = {}", t),
+            _ => unreachable!(),
         });
         let new_target_pos = if forwards {
             target_pos + target_dir
@@ -45,9 +45,9 @@ impl Positioned for Camera {
 
     fn turn(&mut self, anticlockwise: bool) {
         if anticlockwise {
-            self.pos.inc_target_angle(FRAC_PI_3.into());
+            self.pos.inc_target_angle(FRAC_PI_3);
         } else {
-            self.pos.dec_target_angle(FRAC_PI_3.into());
+            self.pos.dec_target_angle(FRAC_PI_3);
         }
     }
 

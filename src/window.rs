@@ -1,7 +1,10 @@
 use failure::{err_msg, Error};
-use opengl_graphics::OpenGL;
-use piston::{event_loop::{Events, EventSettings}, window::WindowSettings};
-use sdl2_window::Sdl2Window;
+use opengl_graphics::GlGraphics;
+use piston::{
+    event_loop::{Events, EventSettings},
+    window::{Window, WindowSettings},
+};
+use sdl2_window::{OpenGL, Sdl2Window};
 
 
 pub const WINDOW_WIDTH:  u32 = 1_366;
@@ -33,4 +36,9 @@ pub fn events() -> Events {
     };
 
     Events::new(event_settings)
+}
+
+/// Initializes graphics backend that one can call `.draw(...)` on.
+pub fn graphics_init<W: Window>(_window: &mut W) -> GlGraphics {
+    GlGraphics::new(OPENGL)
 }

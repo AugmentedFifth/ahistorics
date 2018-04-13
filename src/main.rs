@@ -36,17 +36,17 @@ use controls::Controls;
 use failure::Error;
 use geometry::CubePoint;
 use map_data::simulated_map_data;
-use opengl_graphics::GlGraphics;
 use piston::{
     event_loop::Events,
     input::{
+        AfterRenderEvent,
         Button,
         PressEvent,
         ReleaseEvent,
         RenderEvent,
         UpdateEvent,
     },
-    window::Window,
+    window::{OpenGLWindow, Window},
 };
 use player::Player;
 use scene::Scene;
@@ -79,31 +79,36 @@ fn main_loop<W>(mut events: Events,
                 mut window: W,
                 mut scene:  Scene,
                 settings:   &Settings) -> Result<(), Error>
-    where W: Window
+    where W: OpenGLWindow + Window
 {
-    // Initialize graphics backend that we can call `.draw()` on.
-    let mut gl_graphics = GlGraphics::new(window::OPENGL);
+    // Initialize graphical backend.
+    let mut gl = window::graphics_init(&mut window);
 
     // Initialize controls to handle keypresses, clicks, etc.
     let mut controls = Controls::new();
 
     while let Some(event) = events.next(&mut window) {
-        // If this event is a "render" event.
+        // Event triggered by a render.
         if let Some(render_args) = event.render_args() {
-            draw::draw(&mut gl_graphics, &render_args, &settings, &scene);
+            draw::draw(&mut gl, &render_args, &settings, &scene);
         }
 
-        // If this event is an "update" event.
+        // Event triggered by the end of rendering.
+        if event.after_render_args().is_some() {
+        }
+
+        // Event triggered by an "update" (done `ups` times per second, here
+        // we've set `ups = 60`).
         if let Some(update_args) = event.update_args() {
             scene.step(update_args.dt);
         }
 
-        // If this event is a keyboard key being pressed down.
+        // Event triggered by a keyboard key being depressed.
         if let Some(Button::Keyboard(key)) = event.press_args() {
             controls.press(key, &mut scene.camera, &mut scene.player);
         }
 
-        // If this event is a keyboard key being released.
+        // Event triggered by a keyboard key being released.
         if let Some(Button::Keyboard(key)) = event.release_args() {
             controls.release(&key);
         }

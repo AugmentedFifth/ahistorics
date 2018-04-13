@@ -1,9 +1,13 @@
 use camera::Camera;
 use drawable::Drawable;
 use geometry::{Angle, cube_dir, cube_to_real, CubePoint, Dir};
-use graphics::{Context, math::add, rectangle::{Border, Rectangle, Shape}};
+use graphics::{
+    Context,
+    Graphics,
+    math::add,
+    rectangle::{Border, Rectangle, Shape},
+};
 use matrix::{m, rot, trans};
-use opengl_graphics::GlGraphics;
 use positioned::Positioned;
 use settings::Settings;
 use std::f64::consts::FRAC_PI_3;
@@ -41,7 +45,7 @@ impl Positioned for Player {
     fn unit_move(&mut self, forwards: bool) {
         let target_angle = self.pos.target_angle();
         let turns = (target_angle.radians() / FRAC_PI_3)
-            .round() as usize % 6;
+            .round() as u8 % 6;
 
         let target_pos = *self.pos.target_pos();
         let target_dir = cube_dir(match turns {
@@ -51,7 +55,7 @@ impl Positioned for Player {
             3 => Dir::Down,
             4 => Dir::DownRight,
             5 => Dir::UpRight,
-            t => panic!("turns == {}", t),
+            _ => unreachable!(),
         });
         let new_target_pos = if forwards {
             target_pos + target_dir
@@ -64,9 +68,9 @@ impl Positioned for Player {
 
     fn turn(&mut self, anticlockwise: bool) {
         if anticlockwise {
-            self.pos.inc_target_angle(FRAC_PI_3.into());
+            self.pos.inc_target_angle(FRAC_PI_3);
         } else {
-            self.pos.dec_target_angle(FRAC_PI_3.into());
+            self.pos.dec_target_angle(FRAC_PI_3);
         }
     }
 
@@ -80,7 +84,7 @@ impl Positioned for Player {
 }
 
 impl Drawable for Player {
-    fn draw(&self, camera: &Camera, ctx: &Context, gl: &mut GlGraphics) {
+    fn draw<G: Graphics>(&self, camera: &Camera, ctx: &Context, g: &mut G) {
         // TODO: `hex_scaled_height` should be dynamic state.
         let hex_scaled_height = 12.0;
         let scale_factor = f64::from(WINDOW_HEIGHT) / hex_scaled_height;
@@ -110,7 +114,7 @@ impl Drawable for Player {
               scale_factor / 2.0,  scale_factor / 2.0],
             &ctx.draw_state,
             player_trans.repr,
-            gl,
+            g,
         );
     }
 }
