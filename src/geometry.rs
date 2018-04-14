@@ -20,25 +20,25 @@ pub const HEXAGON_POLY: Polygon = &[
     [ 0.5, -SQRT_3_ON_2],
 ];
 
-const CUBE_DIRS: &[CubePoint<i32>; 6] = &[
-    CubePoint { a:  1, b: -1, c:  0 },
-    CubePoint { a:  1, b:  0, c: -1 },
+const CUBE_DIRS: [CubePoint<i32>; 6] = [
     CubePoint { a:  0, b:  1, c: -1 },
     CubePoint { a: -1, b:  1, c:  0 },
     CubePoint { a: -1, b:  0, c:  1 },
     CubePoint { a:  0, b: -1, c:  1 },
+    CubePoint { a:  1, b: -1, c:  0 },
+    CubePoint { a:  1, b:  0, c: -1 },
 ];
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Dir {
-    DownRight = 0,
-    UpRight   = 1,
-    Up        = 2,
-    UpLeft    = 3,
-    DownLeft  = 4,
-    Down      = 5,
+    Up        = 0u8,
+    UpLeft    = 1,
+    DownLeft  = 2,
+    Down      = 3,
+    DownRight = 4,
+    UpRight   = 5,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -59,6 +59,24 @@ pub struct Angle {
     radians: f64,
 }
 
+
+impl From<u8> for Dir {
+    fn from(n: u8) -> Self {
+        unsafe { ::std::mem::transmute(n) }
+    }
+}
+
+impl Into<u8> for Dir {
+    fn into(self) -> u8 {
+        self as u8
+    }
+}
+
+impl Into<usize> for Dir {
+    fn into(self) -> usize {
+        (self as u8) as usize
+    }
+}
 
 impl<T: Clone + Neg<Output=T> + Sub<Output=T>> CubePoint<T> {
     pub fn new(a: T, b: T, c: T) -> Self {
@@ -274,8 +292,8 @@ impl SubAssign<f64> for Angle {
 }
 
 
-pub fn cube_dir(dir: Dir) -> CubePoint<i32> {
-    CUBE_DIRS[dir as usize]
+pub fn cube_dir<D: Into<usize>>(dir: D) -> CubePoint<i32> {
+    CUBE_DIRS[dir.into()]
 }
 
 pub fn cube_to_real<T: Into<f64>>(cube_pos: CubePoint<T>, size: f64) -> Vec2d {

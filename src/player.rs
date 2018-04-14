@@ -1,6 +1,6 @@
 use camera::Camera;
 use drawable::Drawable;
-use geometry::{Angle, cube_dir, cube_to_real, CubePoint, Dir};
+use geometry::{Angle, cube_dir, cube_to_real, CubePoint};
 use graphics::{
     Context,
     Graphics,
@@ -45,18 +45,10 @@ impl Positioned for Player {
     fn unit_move(&mut self, forwards: bool) {
         let target_angle = self.pos.target_angle();
         let turns = (target_angle.radians() / FRAC_PI_3)
-            .round() as u8 % 6;
+            .round() as usize % 6;
 
         let target_pos = *self.pos.target_pos();
-        let target_dir = cube_dir(match turns {
-            0 => Dir::Up,
-            1 => Dir::UpLeft,
-            2 => Dir::DownLeft,
-            3 => Dir::Down,
-            4 => Dir::DownRight,
-            5 => Dir::UpRight,
-            _ => unreachable!(),
-        });
+        let target_dir = cube_dir(turns);
         let new_target_pos = if forwards {
             target_pos + target_dir
         } else {
