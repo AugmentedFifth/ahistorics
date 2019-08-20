@@ -52,12 +52,11 @@ use player::Player;
 use scene::Scene;
 use settings::Settings;
 
-
 /// Entry point for the program.
 fn main() {
     if let Err(e) = main_() {
         eprintln!("Something went wrong:");
-        e.causes().for_each(|c| eprintln!("    {}.", c));
+        e.iter_chain().for_each(|c| eprintln!("    {}.", c));
 
         std::process::exit(1);
     }
@@ -75,11 +74,14 @@ fn main_() -> Result<(), Error> {
 }
 
 /// The main game loop.
-fn main_loop<W>(mut events: Events,
-                mut window: W,
-                mut scene:  Scene,
-                settings:   &Settings) -> Result<(), Error>
-    where W: OpenGLWindow + Window
+fn main_loop<W>(
+    mut events: Events,
+    mut window: W,
+    mut scene: Scene,
+    settings: &Settings,
+) -> Result<(), Error>
+where
+    W: OpenGLWindow + Window,
 {
     // Initialize graphical backend.
     let mut gl = window::graphics_init(&mut window);
@@ -94,8 +96,7 @@ fn main_loop<W>(mut events: Events,
         }
 
         // Event triggered by the end of rendering.
-        if event.after_render_args().is_some() {
-        }
+        if event.after_render_args().is_some() {}
 
         // Event triggered by an "update" (done `ups` times per second, here
         // we've set `ups = 60`).

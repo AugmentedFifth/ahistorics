@@ -2,18 +2,17 @@ use camera::Camera;
 use draw::SPACING_FACTOR;
 use drawable::Drawable;
 use failure::Error;
-use geometry::{CubePoint, cube_to_real, HEXAGON_POLY};
-use graphics::{Context, Graphics, math::add, polygon::Polygon, types::Color};
+use geometry::{cube_to_real, CubePoint, HEXAGON_POLY};
+use graphics::{math::add, polygon::Polygon, types::Color, Context, Graphics};
 use matrix::{m, rot, scale_uni, trans};
 use positioned::Positioned;
-use rand::{Rng, os::OsRng};
+use rand::{self, prelude::*};
 use window::{
     HALF_WINDOW_HEIGHT,
     HALF_WINDOW_WIDTH,
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
 };
-
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Hex {
@@ -33,7 +32,6 @@ pub struct MapDataIter<'a> {
     data:     &'a Vec<Hex>,
     row_size: usize,
 }
-
 
 impl MapData {
     pub fn new(row_size: usize, data: Vec<Hex>, color: Color) -> Self {
@@ -67,7 +65,8 @@ impl MapData {
     }
 
     pub fn get_axial(&self, q: i32, r: i32) -> Option<&Hex> {
-        self.data.get(((r + q / 2) * self.row_size as i32 + q) as usize)
+        self.data
+            .get(((r + q / 2) * self.row_size as i32 + q) as usize)
     }
 
     pub fn get_rect(&self, x: usize, y: usize) -> Option<&Hex> {
@@ -113,17 +112,15 @@ impl Drawable for MapData {
 
             let cam_rotation = rot(camera.angle().radians());
             let pos = add(
-                cam_rotation.vec_mul(cube_to_real(
-                    tile_minus_cam,
-                    scale_factor,
-                )),
+                cam_rotation
+                    .vec_mul(cube_to_real(tile_minus_cam, scale_factor)),
                 [HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT],
             );
 
-            if pos[0] > -scale_factor                          &&
-               pos[0] < f64::from(WINDOW_WIDTH) + scale_factor &&
-               pos[1] > -scale_factor                          &&
-               pos[1] < f64::from(WINDOW_HEIGHT) + scale_factor
+            if pos[0] > -scale_factor
+                && pos[0] < f64::from(WINDOW_WIDTH) + scale_factor
+                && pos[1] > -scale_factor
+                && pos[1] < f64::from(WINDOW_HEIGHT) + scale_factor
             {
                 let depth_factor = if let Hex::Tile(depth) = *hex {
                     1.0 + f64::from(depth) / 16.0
@@ -131,14 +128,13 @@ impl Drawable for MapData {
                     1.0
                 };
 
-                let transform =
-                    cam_rotation *
-                    scale_uni(
-                        scale_factor *
-                        (SPACING_FACTOR * depth_factor).min(0.975)
-                    ) *
-                    trans(pos) *
-                    m(ctx.transform);
+                let transform = cam_rotation
+                    * scale_uni(
+                        scale_factor
+                            * (SPACING_FACTOR * depth_factor).min(0.975),
+                    )
+                    * trans(pos)
+                    * m(ctx.transform);
 
                 self.poly.draw(
                     HEXAGON_POLY,
@@ -151,13 +147,14 @@ impl Drawable for MapData {
     }
 }
 
-pub fn simulated_map_data(side_len: usize,
-                          color:    Color) -> Result<MapData, Error>
-{
+pub fn simulated_map_data(
+    side_len: usize,
+    color: Color,
+) -> Result<MapData, Error> {
     let area = side_len * side_len;
     let mut data = Vec::with_capacity(area);
 
-    let mut rng = OsRng::new()?;
+    let mut rng = rand::thread_rng();
     for _ in 0..area {
         data.push(if rng.gen() {
             Hex::Blank

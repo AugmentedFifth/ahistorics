@@ -1,30 +1,37 @@
 [package]
-name = "ahistorics"
-version = "0.1.0"
-authors = ["z"]
+name = "ahistorics_old"
+version = "0.0.0"
+authors = ["AugmentedFifth <zcomito@protonmail.com>"]
+edition = "2018"
+repository = "https://github.com/AugmentedFifth/ahistorics_old"
+readme = "README.md"
+categories = ["Games"]
+license = "GPL-3.0-or-later"
 
 [dependencies]
-failure = "*"
-failure_derive = "*"
-fnv = "*"
-piston = "*"
-piston2d-graphics = "*"
-piston2d-opengl_graphics = "*"
+failure = "0.1.5"
+failure_derive = "0.1.5"
+fnv = "1.0.6"
+piston = "0.49.0"
+piston2d-graphics = "0.34.0"
+piston2d-opengl_graphics = "0.68.0"
 pistoncore-sdl2_window = { git = "https://github.com/PistonDevelopers/sdl2_window" }
-rand = "*"
-serde = "*"
-serde_derive = "*"
-toml = "*"
-vecmath = "*"
+rand = "0.7.0"
+serde = "1.0.99"
+serde_derive = "1.0.99"
+toml = "0.5.3"
+vecmath = "1.0.0"
 
 [features]
 default = []
 
 [profile.release]
-lto = true
-panic = "abort"
 opt-level = 3
 debug = false
-debug-assertions = false
 rpath = false
+lto = "fat"
+debug-assertions = false
 codegen-units = 1
+panic = "abort"
+incremental = false
+overflow-checks = false
